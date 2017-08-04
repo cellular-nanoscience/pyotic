@@ -1,0 +1,6 @@
+* Release notes
+
+** version 0.10.0
+
+ - initial published version of PyOTIC.
+

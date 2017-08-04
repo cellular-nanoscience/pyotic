@@ -1,0 +1,14 @@
+include LICENSE.txt
+include MANIFEST.in
+include README.rst
+include requirements.txt
+include setup.py
+
+exclude *.pyc *~ *.pdf #*
+
+recursive-include pyotc *
+recursive-include pyoti *
+
+recursive-include doc *
+recursive-exclude doc/build *
+recursive-exclude doc *.pdf

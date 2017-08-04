@@ -1,0 +1,41 @@
+ZODB >= 4.3.1
+numpy >= 1.8.2
+scipy >= 0.14.0
+matplotlib >= 1.5.1
+ipywidgets >= 4.0.3
+cloudpickle >= 0.1.1
+pint == 0.5.2
+lmfit >= 0.9.3
+
+#    python3 (v 3.4 tested)
+#    ipython (v 4.0.0, 4.0.1, 4.0.2, 4.1.1)
+#    
+#    jupyter (tested 1.0.0)
+#    zope.interface (tested v 4.1.1)
+#    ipywidgets (tested v 4.0.3, 4.1.1, 5.1.5)
+#    #jupyter-client (tested 4.3.0)
+
+# If you receive an "ImportError" upon execution of the
+# PyOTIC software, install the missing package via:
+# pip3 install package_name
+
+# To upgrade the package to the newest version, issue:
+# pip3 install --upgrade package_name
+
+# To install a specific version, issue:
+# pip3 install package_name==version
+
+# For WinPython-64bit-3.4.4.1Qt5 you only need to install ZODB. Open the
+# "WinPython Command Prompt" and install ZODB via:
+# "pip3 install ZODB"
+
+#interactive backend support python3 matplotlib:
+#cairo is supported, install cairocffi:
+#pip3 install cairocffi
+#
+#tkagg is supported, install tk-dev:
+# install tk-dev via packaga management
+#
+#
+# recompiule matplotlib:
+# pip install -U --force-reinstall matplotlib
