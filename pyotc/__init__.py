@@ -22,14 +22,9 @@ def version():
     """
     return __version__
 
-for idx in range(3):
-    p = os.path.join('.', *['..' for l in range(idx)])
-    if any(['VERSION.txt' in os.listdir(p)]):
-        #print('VERSION.txt found in {}'.format(p))
-        break
-
 with open('VERSION.txt', 'r') as version_file:
     __version__ = version_file.read().strip()
+
 
 from IPython import get_ipython
 import ipykernel
