@@ -5,5 +5,5 @@ examples/data
 *.egg-info
 doc/build
 *__pycache__*
-pyoti/version.txt
-pyotc/version.txt
+pyoti/VERSION.txt
+pyotc/VERSION.txt
