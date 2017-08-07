@@ -10,7 +10,7 @@ with open('VERSION.txt') as version_file:
     __version__ = version_file.read().strip()
 
 for pkg in ['pyoti', 'pyotc']:
-    ptf = os.path.join(*['.', pkg, 'version.txt'])
+    ptf = os.path.join(*['.', pkg, 'VERSION.txt'])
     with open(ptf, 'w') as vf:
         vf.write('{}\n'.format(__version__))
     print('created version file: {}'.format(ptf))
