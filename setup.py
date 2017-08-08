@@ -61,6 +61,8 @@ if not abort:
                        'Topic :: Scientific/Engineering :: Visualization', ],
           python_requires='>=3, <4',
           packages=find_packages(),
-          package_dir = {'pyotc': 'pyotc', 'pyoti': 'pyoti'},
-          package_data={'pyotc': ['VERSION.txt'], 'pyoti': ['VERSION.txt']},
+          package_dir = {'pyotc': 'pyotc',
+                         'pyoti': 'pyoti'},
+          package_data={'pyotc': ['VERSION.txt'],
+                        'pyoti': ['VERSION.txt', '*.cfg', '*.py', '*.pyx']},
           )

@@ -16,14 +16,14 @@ import sys
 import os
 
 
+from pkg_resources import resource_string
+__version__ = resource_string(__name__, 'VERSION.txt').strip().decode("utf-8")
+
 def version():
     """
     Returns the version.
     """
     return __version__
-
-with open('VERSION.txt', 'r') as version_file:
-    __version__ = version_file.read().strip()
 
 
 from IPython import get_ipython
@@ -34,21 +34,7 @@ if (hasattr(ipykernel, 'zmqshell')
    and isinstance(ip, ipykernel.zmqshell.ZMQInteractiveShell)):
     import matplotlib
     matplotlib.use('nbAgg')
-    # matplotlib.use('gtkAgg')
-    # import matplotlib.pyplot as plt
 
-    # ip.enable
-    # default to inline in kernel environments
-    # if hasattr(ip, 'kernel'):
-    #     print('enabling inline matplotlib')
-    #     ip.enable_matplotlib('inline')
-    # else:
-    #     print('enabling matplotlib')
-    #     ip.enable_matplotlib()
-
-    # Set format for inline plots
-    # from IPython.display import display
-    # from IPython.core.pylabtools import figsize, getfigs
     from IPython.display import set_matplotlib_formats
     # %config InlineBackend.figure_formats = ['png']
     set_matplotlib_formats('png', 'svg', 'pdf', 'jpeg', quality=90)

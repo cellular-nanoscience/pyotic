@@ -15,16 +15,14 @@ __status__ = "Development"
 import sys
 import os
 
+from pkg_resources import resource_string
+__version__ = resource_string(__name__, 'VERSION.txt').strip().decode("utf-8")
 
 def version():
     """
     Returns the version.
     """
     return __version__
-
-with open( 'VERSION.txt', 'r') as version_file:
-    __version__ = version_file.read().strip()
-
 
 from IPython import get_ipython
 import ipykernel
