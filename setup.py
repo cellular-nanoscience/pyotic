@@ -1,20 +1,44 @@
 #!/usr/bin/env python3
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, findall
 #from distutils.core import setup
 import os
 import re
 import importlib
 
+
+def find_data_files(ldir):
+    """
+    Find files in the given directory in the list of directories.
+
+    Returns a list of (directory, list_of_files) tuples as it is
+    necessary for the data_files arguments of setuptools.setup()
+    function.
+    """
+    dfiles = []
+    for d in ldir:
+        dfiles.append((d, [os.path.join(d, fl)
+                           for fl in os.listdir(d)
+                           if os.path.isfile(os.path.join(d, fl))
+                           ]))
+
+    return dfiles
+
+
+# read the version from VERSION.txt
 with open('VERSION.txt') as version_file:
     __version__ = version_file.read().strip()
 
+# write VERSION.txt files in both packages
 for pkg in ['pyoti', 'pyotc']:
     ptf = os.path.join(*['.', pkg, 'VERSION.txt'])
     with open(ptf, 'w') as vf:
         vf.write('{}\n'.format(__version__))
     print('created version file: {}'.format(ptf))
 
+# get the required packages from requirements.txt and check if they are already
+# installed. Probably obsolete for newer setuptools versions when using required
+# packages arguments of setup() function.
 with open('requirements.txt', 'r') as rfile:
     requs = [re.split('([\s=<>]+)', l.replace('\n', '').strip(' '))
              for l in rfile.readlines()
@@ -64,5 +88,8 @@ if not abort:
           package_dir = {'pyotc': 'pyotc',
                          'pyoti': 'pyoti'},
           package_data={'pyotc': ['VERSION.txt'],
-                        'pyoti': ['VERSION.txt', '*.cfg', '*.py', '*.pyx']},
+                        'pyoti': ['VERSION.txt', '*.cfg', '*.py', '*.pyx',]},
+          data_files=find_data_files(['pyoti/etc/',
+                                      'pyoti/etc/record/',
+                                      ])
           )
