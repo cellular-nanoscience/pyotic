@@ -2776,6 +2776,9 @@ class HeightCalibration(object):
         data[co.fit_method] = self.height_fit_results.method
         data[co.radius] = '{0:1.5e}'.format(self.get_radius(unit=radius_unit))
         data[co.radius_err] = '{0:1.5e}'.format(self.get_radius_err(unit=radius_unit))
+        
+        data[co.fs] = '{0:1.5e}'.format(pars['focal_shift'].value)
+        data[co.dfs] = '{0:1.5e}'.format(pars['focal_shift'].stderr)
 
         if height_unit != 'um':
             hconv = ureg('um').to(height_unit).magnitude
