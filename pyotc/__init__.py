@@ -30,6 +30,7 @@ from IPython import get_ipython
 import ipykernel
 
 #Load matplotlib and set backend:
+ip = get_ipython()
 if (hasattr(ipykernel, 'zmqshell')
    and isinstance(ip, ipykernel.zmqshell.ZMQInteractiveShell)):
     import matplotlib
