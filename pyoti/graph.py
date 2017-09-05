@@ -534,19 +534,20 @@ class GraphMember(persistent.Persistent):
             else:
                 # Inform self and children about loss of a parent
                 self.set_changed()
+
         return removed
 
     def remove_parent(self, parent, set_changed=True):
         """
         Remove parent from self.parents
         """
-        self.remove_member(parent, child=False, set_changed=set_changed)
+        return self.remove_member(parent, child=False, set_changed=set_changed)
 
     def remove_child(self, child, set_changed=True):
         """
         Remove child from self.children
         """
-        self.remove_member(child, child=True, set_changed=set_changed)
+        return self.remove_member(child, child=True, set_changed=set_changed)
 
     def set_member(self, member, child=True, set_changed=True):
         """

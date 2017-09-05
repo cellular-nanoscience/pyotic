@@ -1153,14 +1153,23 @@ def force(forceXYZ, positionXY):
     return force
 
 
-def distanceXYZ(positionXYZ, displacementXYZ, radius=0.0, focalshift=1.0):
+def distanceXYZ(positionXYZ, displacementXYZ, radius=0.0, focalshift=1.0,
+                clip_Z=True):
     """
     Distance of the attachment point to the bead center for all 3 axes.
     positionXYZ, displacementXYZ and radius need to have the same unit.
     If radius is 0.0, the positionZ is not corrected by the radius. You should
-    do this, if the positionZ is defined in such a way, that positionZ is 0.0,
-    where the bead center would be on the glass surface.
+    set radius to 0.0, if the positionZ is defined in such a way, that
+    positionZ is 0.0, where the bead center would be on the glass surface.
     If focalshift is 1.0, the positionXYZ is not corrected by the focalshift.
+
+    Parameters
+    ----------
+    positionXYZ : np.array
+    displacementXYZ : np.array
+    radius : float
+    focalshift : float
+    clip_Z : bool
     """
     # distance, point of attachment of DNA
     # displacement, displacement of bead out of trap center
@@ -1173,6 +1182,8 @@ def distanceXYZ(positionXYZ, displacementXYZ, radius=0.0, focalshift=1.0):
                          + radius
                          # distanceZ + radius + displacementZ
                          + displacementXYZ[:, 2])
+    if clip_Z:
+        distanceXYZ[:, 2] = distanceXYZ[:, 2].clip(min=0.0)
     # A positive positionZ signal (positionZ upwards) corresponds to a
     # decreasing (negative) distance of the bead to the surface:
     #   -> distanceZ ~ - positionZ

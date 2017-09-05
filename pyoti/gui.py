@@ -6,7 +6,6 @@ Created on Wed Mar  9 17:07:32 2016
 """
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import time
 from ipywidgets import interact, IntSlider
 from IPython.core.display import Image, display
@@ -52,6 +51,7 @@ class GRS(object):
         self._onselect_callbacks = []
         self._spanselector = {}
         self._axspan = {}
+        self.select = True
 
     def add_onselect_callback(self, function=None):
         """
@@ -162,17 +162,19 @@ class GRS(object):
             ax[trace].ticklabel_format(useOffset=False)
             ax[trace].set_xlim(*xlim)
             ax[trace].grid(True)
-            # indicators, which span is going to be used
-            self._axspan[trace] = ax[trace].axvspan(self._tmin,
-                                                    self._tmax,
-                                                    facecolor='y',
-                                                    alpha=0.1)
-            # selectors for timespan to be used
-            self._spanselector[trace] = SpanSelector(ax[trace],
-                                                     self._set_time_span,
-                                                     'horizontal',
-                                                     useblit=True,
-                                                     minspan=self._minspan)
+
+            if self.select:
+                # indicators, which span is going to be used
+                self._axspan[trace] = ax[trace].axvspan(self._tmin,
+                                                        self._tmax,
+                                                        facecolor='y',
+                                                        alpha=0.1)
+                # selectors for timespan to be used
+                self._spanselector[trace] = SpanSelector(ax[trace],
+                                                         self._set_time_span,
+                                                         'horizontal',
+                                                         useblit=True,
+                                                         minspan=self._minspan)
 
         # Add OK button
         # TODO: improve scaling of OK button size
@@ -270,7 +272,8 @@ class GRS(object):
         self.ifigure = None
 
     def init_ifig(self, timevector, data, samplingrate, traces, tmin=None,
-                  tmax=None, onselect_cb=None, xlim=None, description=None):
+                  tmax=None, onselect_cb=None, xlim=None, description=None,
+                  select=True):
         """
         Create and show a figure based on the given timevector and data that
         lets the user choose a timespan (tmin, tmax). Whenever the user changes
@@ -302,6 +305,8 @@ class GRS(object):
             str describing the purpose of the region to select. Is used as a
             heading for the figure.
         """
+        self.select = select
+
         # nbagg backend needs to have the figure closed and recreated
         # whenever the code of the cell displaying the figure is executed.
         # A simple update of the figure would let it disappear. Even a

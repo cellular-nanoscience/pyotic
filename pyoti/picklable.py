@@ -215,8 +215,9 @@ class InteractiveAttributes(persistent.Persistent):
                 value_type = None
             else:
                 value_type = type(value)
-            if isinstance(value, collections.Iterable):
-                options = value
+            if isinstance(value, collections.Iterable) \
+                and not isinstance(options, collections.Iterable):
+                    options = value
             widget_class = WIDGET_CLASS[value_type]
             widget = widget_class(description=description, value=value,
                                   options=options)
@@ -331,7 +332,9 @@ class InteractiveAttributes(persistent.Persistent):
         state = self.__dict__.copy()
         state['_widgets'] = state['_widgets'].copy()
         for key, widget in state['_widgets'].items():
-            value = widget.value
+            value = None
+            if hasattr(widget, 'value'):
+                value = widget.value
             description = widget.description
             options = None
             if hasattr(widget, 'options'):
@@ -356,7 +359,6 @@ class InteractiveAttributes(persistent.Persistent):
                 options = None
             else:  # len == 4, since 0.6.3
                 value, description, options, _ = widgetState
-
             widget = self._create_widget(key, value=value, options=options,
                                          description=description)
             state['_widgets'][key] = widget

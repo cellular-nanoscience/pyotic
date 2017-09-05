@@ -333,10 +333,11 @@ class Modification(GraphMember, metaclass=ABCMeta):
             if not self.automatic:
                 print("  Parameters set manually!")
             for key, widget in self.iattributes._widgets.items():
-                if isinstance(widget.value, float):
-                    print("    %s: %.5f" % (widget.description, widget.value))
-                if isinstance(widget.value, collections.Iterable):
-                    print("    %s: %s" % (widget.description, widget.value))
+                if hasattr(widget, 'value'):
+                    if isinstance(widget.value, float):
+                        print("    %s: %.5f" % (widget.description, widget.value))
+                    if isinstance(widget.value, collections.Iterable):
+                        print("    %s: %s" % (widget.description, widget.value))
             self._print_info()
 
     def _print_info(self):

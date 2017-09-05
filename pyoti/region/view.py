@@ -565,7 +565,8 @@ class MultiRegion(Region):
         # Pandas? Every parent has its own samplingrate.
         return self.record.samplingrate
 
-    def add_parent(self, region, index=None, after=None, before=None):
+    def add_parent(self, region, index=None, after=None, before=None,
+                   update_indices=True):
         """
         Priority of inserting the new region at a specific index in descending
         order:
@@ -622,24 +623,26 @@ class MultiRegion(Region):
                                   before=before, set_changed=False):
             return False
 
-        # Determine index, where insertion took place.
-        index = 0
-        for parent in self.parents:
-            if parent is region:
-                break
-            index += parent.datapoints
-
-        # Create index_shift: (caller, name, index, shift)
-        # Virtually, adding a region, is as if one would shift the stop of the
-        # preceding region by region.datapoints.
-        index_shift = (self, 'stop', index, region.datapoints)
+        index_shift = None
+        if update_indices:
+            # Determine index, where insertion took place.
+            index = 0
+            for parent in self.parents:
+                if parent is region:
+                    break
+                index += parent.datapoints
+    
+            # Create index_shift: (caller, name, index, shift)
+            # Virtually, adding a region, is as if one would shift the stop of the
+            # preceding region by region.datapoints.
+            index_shift = (self, 'stop', index, region.datapoints)
 
         # Inform children about index_shift
         self.set_changed(level=1, index_shift=index_shift)
 
         return True
 
-    def remove_parent(self, region):
+    def remove_parent(self, region, update_indices=True):
         if region is None:
             return False
 
@@ -666,10 +669,12 @@ class MultiRegion(Region):
         if not super().remove_parent(region, set_changed=False):
             return False
 
-        # Create index shift
-        # Virtually, removing a region is as if one would shift the start of a
-        # following region by region.datapoints.
-        index_shift = (self, 'start', index, region.datapoints)
+        index_shift = None
+        if update_indices:
+            # Create index shift
+            # Virtually, removing a region is as if one would shift the start of a
+            # following region by region.datapoints.
+            index_shift = (self, 'start', index, region.datapoints)
 
         # Inform children about index_shift,
         self.set_changed(level=1, index_shift=index_shift)

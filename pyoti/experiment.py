@@ -667,6 +667,49 @@ class Experiment(object):
         return view
 
     @if_open
+    def show_view(self, view, group=None, traces=None, description=None,
+                     xlim=None):
+        """
+        Graphically inspect a View.
+
+        Parameters
+        ----------
+        view : str or GraphMember
+            Name of the View, a GraphMember with the name, or the View itself.
+        group : str, optional
+            The name of the group. Defaults to None or `view.group`.
+        traces : str, int, list of str/int, or slice
+            Select the traces the user is shown to adjust the timespan from.
+            The selection of the traces does *not* influence the traces
+            contained in the View. Defaults to all traces available in the
+            View determined by `view`.
+        description : str
+            Short description of what the selection of the timespan is used
+            for.
+        xlim : (float, float), optional
+            The timespan (s) plotted.
+            Defaults to (View.tmin, View.tmax) of the View determined by
+            `view`.
+        """
+        view = self.view(name=view, group=group)
+        if view is not None:
+            # if traces is None or (isinstance(traces, list)
+            # and len(traces) == 0):
+            traces = view.traces_available(traces)
+            # tc.normalize(traces)
+            # traces = traces or view.traces
+            if description is None:
+                description = view.name
+            self._grs.init_ifig(view.timevector,
+                                view.get_data(traces=traces,
+                                                     copy=False),
+                                view.samplingrate,
+                                traces,
+                                xlim=xlim,
+                                description=description,
+                                select=False)
+
+    @if_open
     def adjust_view(self, view, group=None, traces=None, description=None,
                     xlim=None, set_last_adjusted_view=True):
         """
@@ -992,7 +1035,7 @@ class Experiment(object):
     @if_open
     def append_to(self, name, append_region, group=None, append_group=None,
                   after=None, after_group=None, before=None,
-                  before_group=None):
+                  before_group=None, update_indices=True):
         """
         Appends a Region as a parent to a View.
 
@@ -1022,6 +1065,8 @@ class Experiment(object):
         before_group : str, optional
             Name of the group of the before region. Defaults to None or
             `before_region.group`.
+        update_indices : bool, optional
+            Update the indices of the child Regions. Defaults to True.
 
         Returns
         -------
@@ -1029,14 +1074,19 @@ class Experiment(object):
             True if the region was appended or is already a parent. Otherwise
             return False.
         """
-        group = group or name
+        if group is None:
+            if isinstance(name, GraphMember):
+                group = name.group
+            else:
+                group = name
         view = self.view(name=name, group=group)
         append_region = self.region(name=append_region, group=append_group)
         if view is not None and append_region is not None:
             after = self.region(name=after, group=after_group)
             before = self.region(name=before, group=before_group)
             return view.parent.add_parent(append_region, after=after,
-                                          before=before)
+                                          before=before,
+                                          update_indices=update_indices)
         return False
 
     @if_open
@@ -1191,7 +1241,8 @@ class Experiment(object):
             or self.remove_record(record=name, group=group)
 
     @if_open
-    def remove_from(self, view, remove_region, group=None, remove_group=None):
+    def remove_from(self, view, remove_region, group=None, remove_group=None,
+                    update_indices=True):
         """
         Remove a parent Region of a (concatenated) view. If the region is the
         last in the view, the view and all its descendants are removed, too.
@@ -1212,6 +1263,8 @@ class Experiment(object):
         remove_group : str, optional
             Name of the group of the remove region. Defaults to None or
             `remove_region.group`.
+        update_indices : bool, optional
+            Update the indices of the child Regions. Defaults to True.
 
         Returns
         -------
@@ -1222,13 +1275,14 @@ class Experiment(object):
         remove_region = self.region(name=remove_region, group=remove_group)
 
         if view is not None and remove_region is not None:
-            view.parent.remove_parent(remove_region)
+            view.parent.remove_parent(remove_region,
+                                      update_indices=update_indices)
 
         return remove_region
 
     @if_open
     def replace_in(self, view, remove_region, with_region, group=None,
-                   remove_group=None, with_group=None):
+                   remove_group=None, with_group=None, update_indices=True):
         """
         Replace a parent Region of a view with another one.
 
@@ -1251,6 +1305,8 @@ class Experiment(object):
         with_group : str, optional
             Name of the group of the with region. Defaults to None or
             `with_region.group`.
+        update_indices : bool, optional
+            Update the indices of the child Regions. Defaults to True.
 
         Returns
         -------
@@ -1264,8 +1320,10 @@ class Experiment(object):
                 and remove_region is not None
                 and with_region is not None
                 and remove_region is not with_region):
-            self.append_to(view, with_region, after=remove_region)
-            self.remove_from(view, remove_region)
+            self.append_to(view, with_region, after=remove_region,
+                           update_indices=update_indices)
+            self.remove_from(view, remove_region,
+                             update_indices=update_indices)
 
         return remove_region
 
@@ -1416,6 +1474,8 @@ class Experiment(object):
         -----
         The returned Region can be either a Record or a View.
         """
+        if name is None and group is None:
+            return None
         return self.member(name=name, group=group, instance_class=Region)
 
     @if_open
@@ -1433,6 +1493,8 @@ class Experiment(object):
         -------
         Record or None
         """
+        if name is None and group is None:
+            return None
         return self.member(name=name, group=group, instance_class=Record,
                            level=1)
 
@@ -1451,6 +1513,8 @@ class Experiment(object):
         -------
         View or None
         """
+        if name is None and group is None:
+            return None
         return self.member(name=name, group=group, instance_class=View)
 
     @if_open
@@ -1469,6 +1533,8 @@ class Experiment(object):
         -------
         Modification or None
         """
+        if name is None and group is None:
+            return None
         return self.member(name=name, group=group, instance_class=Modification)
 
     @if_open
