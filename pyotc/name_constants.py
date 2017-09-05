@@ -76,6 +76,7 @@ corr_err = 'correction_factor_error'
 d_app_surf = 'apparent_surface_distance'
 d_app_surf_err = 'apparent_surface_distance_err'
 h0 = 'h0'
+h0_err = 'h0_err'
 height_offset = 'applied_height_offset'
 
 dissens = 'displacement_sensitivity'

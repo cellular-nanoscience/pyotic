@@ -2781,10 +2781,14 @@ class HeightCalibration(object):
             hconv = ureg('um').to(height_unit).magnitude
         else:
             hconv = 1.0
+        
+        data[co.h0] = '{0:1.5e}'.format(pars['h0'].value * hconv)
+        data[co.h0_err] = '{0:1.5e}'.format(pars['h0'].stderr * hconv)
+        
+        data[co.height_offset] = '{0:1.5e}'.format(self.height_offset * hconv)
+        
         d_app_surf = (pars['h0'].value - self.height_offset) * hconv
         data[co.d_app_surf] = '{0:1.5e}'.format(d_app_surf)
-        data[co.h0] = pars['h0'].value * hconv
-        data[co.height_offset] = self.height_offset
         data[co.d_app_surf_err] = '{0:1.5e}'.format(pars['h0'].stderr * hconv)
 
         data[co.corr] = '{0:1.5e}'.format(pars['corr'].value)
