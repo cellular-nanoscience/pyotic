@@ -75,6 +75,15 @@ if not abort:
                                   './etc/group.cfg',
                                   './etc/traces.cfg',
                                   './etc/record/GenericData.cfg',
-                                  './etc/record/GenericDataFile.cfg'
-                                   '*.py', '*.pyx',]},
+                                  './etc/record/GenericDataFile.cfg',
+                                  './modification/modifications/generic.py',
+                                  './modification/modifications/rotation.py',
+                                  './modification/modifications/offset.py',
+                                  './modification/modifications/beadscan.py',
+                                  './modification/modifications/attachment.py',
+                                  './modification/modifications/touchdown.py',
+                                  './modification/modifications/impact.py',
+                                  './modification/modifications/baseline.py',
+                                  './evaluate/fast.pyx',
+                                  ]},
           )
