@@ -7,24 +7,6 @@ import re
 import importlib
 
 
-def find_data_files(ldir):
-    """
-    Find files in the given directory in the list of directories.
-
-    Returns a list of (directory, list_of_files) tuples as it is
-    necessary for the data_files arguments of setuptools.setup()
-    function.
-    """
-    dfiles = []
-    for d in ldir:
-        dfiles.append((d, [os.path.join(d, fl)
-                           for fl in os.listdir(d)
-                           if os.path.isfile(os.path.join(d, fl))
-                           ]))
-
-    return dfiles
-
-
 # read the version from VERSION.txt
 with open('VERSION.txt') as version_file:
     __version__ = version_file.read().strip()
@@ -88,8 +70,11 @@ if not abort:
           package_dir = {'pyotc': 'pyotc',
                          'pyoti': 'pyoti'},
           package_data={'pyotc': ['VERSION.txt'],
-                        'pyoti': ['VERSION.txt', '*.cfg', '*.py', '*.pyx',]},
-          data_files=find_data_files(['pyoti/etc/',
-                                      'pyoti/etc/record/',
-                                      ])
+                        'pyoti': ['VERSION.txt',
+                                  './etc/calibration.cfg',
+                                  './etc/group.cfg',
+                                  './etc/traces.cfg',
+                                  './etc/record/GenericData.cfg',
+                                  './etc/record/GenericDataFile.cfg'
+                                   '*.py', '*.pyx',]},
           )
