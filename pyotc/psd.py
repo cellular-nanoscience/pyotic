@@ -673,7 +673,7 @@ class ExpSetting(object):
             Use copy() to make a duplicate of the setting.
         """
         # temperature
-        self._qtemp = (temp * ureg(temp_unit)).plus_minus(temp_err)
+        self._qtemp = ureg.Measurement(temp, temp_err, temp_unit)
 
         # radius
         self._radius = radius
@@ -757,9 +757,9 @@ class ExpSetting(object):
         """ Set the Temperature of the measurement in specified units. """
         T_err = self._qtemp.error.magnitude
         if unit == self._temp_unit:
-            self._qtemp = (temp * ureg(unit)).plus_minus(T_err)
+            self._qtemp = ureg.Measurement(temp, T_err, unit)
         else:
-            T = (temp * ureg(unit)).plus_minus(T_err)
+            T = ureg.Measurement(temp, T_err, unit)
             self._qtemp = T.to(self._temp_unit)
 
     @property
@@ -776,9 +776,9 @@ class ExpSetting(object):
         """ Set the Temperature of the measurement in specified units. """
         T = self.temp
         if unit == self._temp_unit:
-            self._qtemp = (T * ureg(unit)).plus_minus(T_err)
+            self._qtemp = ureg.Measurement(T, T_err, unit)
         else:
-            T_ = (T * ureg(unit)).plus_minus(T_err)
+            T_ = ureg.Measurement(T, T_err, unit)
             self._qtemp = T_.to(self._temp_unit)
 
     @property
