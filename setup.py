@@ -38,7 +38,8 @@ for requ in requs:
            print("\tPyOTIC requires version {}".format(''.join(requ[1:]).strip()))
 
 if abort:
-    print("Try to install the missing package(s) first.")
+    print("Try to install the missing package(s) first, e.g. type:\n"
+          "$ pip(3) install {}".format(' '.join(l[0] for l in requs)))
         
 if not abort:
     long_desc = """
@@ -65,8 +66,7 @@ if not abort:
                        'Programming Language :: Python',
                        'Topic :: Scientific/Engineering :: Physics',
                        'Topic :: Scientific/Engineering :: Visualization', ],
-          python_requires='~=3.4',
-          install_requires=[''.join(l) for l in requs],
+          python_requires='>=3, <4',
           packages=find_packages(),
           package_dir = {'pyotc': 'pyotc',
                          'pyoti': 'pyoti'},
