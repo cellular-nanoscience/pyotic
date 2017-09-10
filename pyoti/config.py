@@ -11,17 +11,17 @@ import os
 import appdirs
 
 
-PYOTI_CONFIG_DIRS = [os.path.join(os.path.dirname(globals()['__file__']),
+pyoti_config_dirs = [os.path.join(os.path.dirname(globals()['__file__']),
                                   'configs')]
-SITE_CONFIG_DIRS = appdirs.AppDirs('pyoti',
+site_config_dirs = appdirs.AppDirs('pyoti',
                                    multipath=True).site_config_dir.split(':')
-USER_CONFIG_DIRS = appdirs.AppDirs('pyoti',
+user_config_dirs = appdirs.AppDirs('pyoti',
                                    multipath=True).user_config_dir.split(':')
 
 
 def _cfg_file_paths(cfgfile):
     cfgfiles = []
-    for directory in PYOTI_CONFIG_DIRS + SITE_CONFIG_DIRS + USER_CONFIG_DIRS:
+    for directory in pyoti_config_dirs + site_config_dirs + user_config_dirs:
         file_path = os.path.join(directory, cfgfile)
         if file_path not in cfgfiles:
             cfgfiles.append(file_path)

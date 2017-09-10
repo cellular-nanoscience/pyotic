@@ -12,16 +12,14 @@ import os
 import appdirs
 
 
-PYOTI_PLUGINS_DIRS = [os.path.dirname(globals()['__file__'])]
-SITE_PLUGINS_DIRS = [os.path.join(directory, 'pyoti') for directory in
+pyoti_plugins_dirs = [os.path.dirname(globals()['__file__'])]
+site_plugins_dirs = [os.path.join(directory, 'pyoti') for directory in
                          appdirs.AppDirs('pyoti',
-                                    multipath=True).site_data_dir.split(':')
-                    ]
-USER_PLUGINS_DIRS = [os.path.join(directory, 'plugins') for directory in
+                                    multipath=True).site_data_dir.split(':')]
+user_plugins_dirs = [os.path.join(directory, 'plugins') for directory in
                          appdirs.AppDirs('pyoti',
-                                    multipath=True).user_data_dir.split(':')
-                    ]
-PLUGIN_KINDS = ['datasources', 'modifications', 'calibsources']
+                                    multipath=True).user_data_dir.split(':')]
+plugins_kinds = ['datasources', 'modifications', 'calibsources']
 
 
 def load_module(module_path, module_name):
@@ -47,8 +45,8 @@ def load_module(module_path, module_name):
 
 
 def load_modules():
-    for plug_dir in PYOTI_PLUGINS_DIRS + SITE_PLUGINS_DIRS + USER_PLUGINS_DIRS:
-        for kind in PLUGIN_KINDS:
+    for plug_dir in pyoti_plugins_dirs + site_plugins_dirs + user_plugins_dirs:
+        for kind in plugins_kinds:
             path = os.path.join(plug_dir, kind)
             if os.path.isdir(path):
                 for name in os.listdir(path):
