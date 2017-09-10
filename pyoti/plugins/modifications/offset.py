@@ -6,8 +6,8 @@ Created on Thu Mar 10 21:11:44 2016
 """
 import numpy as np
 
-from ..modification import Modification
-from ... import traces as tc
+from pyoti.modification.modification import Modification
+from pyoti import traces as tc
 
 
 class Offset(Modification):

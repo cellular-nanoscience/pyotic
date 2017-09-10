@@ -10,13 +10,20 @@ __credits__ = []
 __license__ = "Apache-2.0"
 __maintainer__ = "Tobias Jachowski"
 __email__ = "pyoti@jachowski.de"
-__status__ = "Development"
+__status__ = "beta"
 
-import sys
+
 import os
+directory = os.path.dirname(globals()['__file__'])
 
-from pkg_resources import resource_string
-__version__ = resource_string(__name__, 'VERSION.txt').strip().decode("utf-8")
+
+try:
+    with open(os.path.join(directory, 'VERSION.txt')) as f:
+        __version__ = f.read().strip()
+except:
+    with open(os.path.join(directory, '..', 'VERSION.txt')) as f:
+        __version__ = f.read().strip()
+
 
 def version():
     """
@@ -54,6 +61,14 @@ if (hasattr(ipykernel, 'zmqshell')
     from IPython.display import set_matplotlib_formats
     # %config InlineBackend.figure_formats = ['png']
     set_matplotlib_formats('png', 'svg', 'pdf', 'jpeg', quality=90)
+
+
+# Load pyoti plugins
+from .plugins import plugin_loader
+plugin_loader.load_modules()
+
+
+import os
 
 from . import experiment as ep
 from . import evaluate as ev

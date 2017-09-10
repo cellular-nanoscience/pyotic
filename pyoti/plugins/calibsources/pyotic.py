@@ -7,9 +7,9 @@ Created on Fri Mar 11 15:32:58 2016
 import numpy as np
 import pint
 
-from ... import config as cfg
-from ..calibsource import CalibrationSource
-from ... import helpers as hp
+from pyoti import config as cfg
+from pyoti.calibration.calibsource import CalibrationSource
+from pyoti import helpers as hp
 
 
 class PyOTICfSource(CalibrationSource):

@@ -7,7 +7,6 @@ Created on Wed Mar  9 17:12:08 2016
 import importlib
 import numbers
 import numpy as np
-import os
 import persistent
 
 from . import calibsource as cs
@@ -283,9 +282,7 @@ def create_calibration(source_type=None, source_module=None, source_class=None,
         Any parameters, a CalibrationSource needs to be initialized.
     """
     # Set default configfile
-    if cfgfile is None:
-        directory = os.path.dirname(globals()['__file__'])
-        cfgfile = os.path.join(directory, '..', 'etc', 'calibration.cfg')
+    cfgfile = cfgfile or 'calibration.cfg'
 
     # Read configfile
     cfg = cf.read_cfg_file(cfgfile)

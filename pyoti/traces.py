@@ -5,7 +5,6 @@ Created on Thu Dec  3 13:39:13 2015
 @author: Tobias Jachowski
 """
 import collections
-import os
 import sys
 
 from . import config as cf
@@ -107,6 +106,5 @@ class Traces(object):
     def __package__(self):
         return __package__
 
-directory = os.path.dirname(globals()['__file__'])
-cfgfile = os.path.join(directory, 'etc', 'traces.cfg')
+cfgfile='traces.cfg'
 sys.modules[__name__] = Traces(cfgfile)
