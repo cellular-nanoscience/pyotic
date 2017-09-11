@@ -73,7 +73,7 @@ if not abort:
           package_data={'pyotc': ['VERSION.txt'],
                         'pyoti': ['VERSION.txt',
                                   './configs/calibration.cfg',
-                                  './configs/group.cfg',
+                                  './configs/groups.cfg',
                                   './configs/traces.cfg',
                                   './configs/record/GenericData.cfg',
                                   './configs/record/GenericDataFile.cfg',
