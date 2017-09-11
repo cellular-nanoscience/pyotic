@@ -6,7 +6,7 @@ Created on Fri Mar 11 15:31:12 2016
 """
 import numpy as np
 
-from ..calibsource import CalibrationSource
+from pyoti.calibration.calibsource import CalibrationSource
 
 
 class CNMatlabSource(CalibrationSource):

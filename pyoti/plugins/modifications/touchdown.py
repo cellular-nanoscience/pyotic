@@ -9,8 +9,8 @@ import numpy as np
 from matplotlib.widgets import Cursor
 from scipy.optimize import fsolve
 
-from ..modification import Modification, GraphicalMod
-from ... import traces as tc
+from pyoti.modification.modification import Modification, GraphicalMod
+from pyoti import traces as tc
 
 
 class ITouchdown(GraphicalMod):

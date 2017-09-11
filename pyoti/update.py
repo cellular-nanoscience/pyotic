@@ -16,7 +16,7 @@ def comp(version):
     return tuple(map(int, (version.split('.'))))
 
 
-def _update_db(experiment):
+def update_db(experiment):
     """
     Update the format of the file the Experiment is saved in, if the structure
     of the database has changed.
@@ -27,9 +27,15 @@ def _update_db(experiment):
 
     old_version = experiment.version
     new_version = version()
+
+    _update_db(experiment, old_version, new_version)
+
+
+def _update_db(experiment, old_version, new_version):
     if comp(old_version) < comp(new_version):
         print("Updating database from %s to %s ..." % (old_version,
                                                        new_version))
+
         old_version = comp(old_version)
 
         # Load analyzer module from tethered_bead package (<= 0.2.3)
@@ -541,6 +547,50 @@ def _update_db(experiment):
                         old='pyoti.calibration.calibsources.cnmatlab',
                         new='pyoti.calibration.calibsources.cellnano',
                         new_class_name='CNMatlabSource')
+
+        # Update to 0.11.0
+        if old_version < comp('0.11.0'):
+            # Map old modules to new module names (new modules have already
+            # been loaded by plugin.plugin_loader.load_modules())
+            import sys
+            import pyoti
+            old_mods = ['pyoti.modification.modifications.attachment',
+                        'pyoti.modification.modifications.baseline',
+                        'pyoti.modification.modifications.beadscan',
+                        'pyoti.modification.modifications.offset',
+                        'pyoti.modification.modifications.rotation',
+                        'pyoti.modification.modifications.touchdown',
+                        'pyoti.modification.modifications.generic',
+                        'pyoti.data.datasources.cnlabview',
+                        'pyoti.data.datasources.generic',
+                        'pyoti.calibration.calibsources.cellnano',
+                        'pyoti.calibration.calibsources.pyotic']
+            new_mods = ['pyoti.plugins.modifications.attachment',
+                        'pyoti.plugins.modifications.baseline',
+                        'pyoti.plugins.modifications.beadscan',
+                        'pyoti.plugins.modifications.offset',
+                        'pyoti.plugins.modifications.rotation',
+                        'pyoti.plugins.modifications.touchdown',
+                        'pyoti.plugins.modifications.generic',
+                        'pyoti.plugins.datasources.cellnano',
+                        'pyoti.plugins.datasources.generic',
+                        'pyoti.plugins.calibsources.cellnano',
+                        'pyoti.plugins.calibsources.pyotic']
+            for old, new in zip(old_mods, new_mods):
+                sys.modules[old] = sys.modules[new]
+            # To update the __module__ attribute of objects, one must
+            # trigger a change of objects directly referencing the objects,
+            # whose __module__ has changed, not the objects themselves. This is
+            # weird!
+            for obj in experiment._graphroot.members():
+                if isinstance(obj, pyoti.modification.Modification):
+                    # Update modification (directly referenced by a node)
+                    obj._node._p_changed = True
+                if isinstance(obj, pyoti.region.Record):
+                    # Update datasource (directly referenced by a record)
+                    obj._p_changed = True
+                    # Update calibsource (directly referency by a calibration)
+                    obj.calibration._p_changed = True
 
         # Update to X.Y.Z
         # if old_version < comp('X.Y.Z'):

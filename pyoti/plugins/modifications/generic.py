@@ -6,10 +6,10 @@ Created on Thu Mar 31 14:58:54 2016
 """
 import numpy as np
 
-from ..modification import Modification
-from ... import helpers as hp
-from ... import traces as tc
-from ...picklable import unboundfunction
+from pyoti.modification.modification import Modification
+from pyoti import helpers as hp
+from pyoti import traces as tc
+from pyoti.picklable import unboundfunction
 
 
 class GenericMod(Modification):

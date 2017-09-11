@@ -7,6 +7,25 @@ Created on Mon Mar 14 23:31:01 2016
 
 import configparser
 import importlib
+import os
+import appdirs
+
+
+pyoti_config_dirs = [os.path.join(os.path.dirname(globals()['__file__']),
+                                  'configs')]
+site_config_dirs = appdirs.AppDirs('pyoti',
+                                   multipath=True).site_config_dir.split(':')
+user_config_dirs = appdirs.AppDirs('pyoti',
+                                   multipath=True).user_config_dir.split(':')
+
+
+def _cfg_file_paths(cfgfile):
+    cfgfiles = []
+    for directory in pyoti_config_dirs + site_config_dirs + user_config_dirs:
+        file_path = os.path.join(directory, cfgfile)
+        if file_path not in cfgfiles:
+            cfgfiles.append(file_path)
+    return cfgfiles
 
 
 def read_cfg_file(cfgfile, verbose=True):
@@ -28,10 +47,10 @@ def read_cfg_file(cfgfile, verbose=True):
     """
     cfg = configparser.ConfigParser()
     cfg.optionxform = str
-    with open(cfgfile) as f:
-        cfg.read_file(f)
-    # if len(found) is 0:
-    #     verbose and print("Couldn't find config file %s" % cfgfile)
+    cfgfiles = _cfg_file_paths(cfgfile)
+    cfgfiles_found = cfg.read(cfgfiles)
+    if len(cfgfiles_found) == 0:
+        raise FileNotFoundError('No such file or directory: %s' % cfgfiles)
     return cfg
 
 
@@ -113,7 +132,7 @@ def get_cfg_sec_dict(cfg, sec, convert='float', verbose=False):
 
 def get_cfg_list(cfg, sec, opt, verbose=False):
     """
-    Retrieve a comma separated value of a specific option as a list.
+    Retrieve a comma separated list of values of a specified option.
 
     Parameters
     ----------
@@ -141,7 +160,7 @@ def get_cfg_list(cfg, sec, opt, verbose=False):
 def get_cfg_class(cfg, sec, mod_opt='module', cls_opt='class', std_mod=None,
                   std_cls=None, verbose=False):
     """
-    Retrieve a class object as described of an option an a section.
+    Retrieve a class object as described by an option of a section.
 
     Parameters
     ----------

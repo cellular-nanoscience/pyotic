@@ -7,8 +7,8 @@ Created on Fri Mar 18 13:41:17 2016
 import inspect
 import numbers
 
-from ..datasource import DataSource
-from ...picklable import unboundfunction
+from pyoti.data.datasource import DataSource
+from pyoti.picklable import unboundfunction
 
 
 class GenericDataFile(DataSource):
@@ -56,8 +56,8 @@ class GenericDataFile(DataSource):
 class GenericData(DataSource):
     def __init__(self, load_data, samplingrate=1.0, **kwargs):
         """
-        parext : str, optional
-            The extension of the parameter file ('_para.dat', default)
+        load_data : function
+        samplingrate : float
         """
         self.load_data = unboundfunction(load_data)
 

@@ -7,9 +7,9 @@ Created on Thu Mar 10 21:33:22 2016
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ..modification import Modification, GraphicalMod
-from ... import traces as tc
-from ...evaluate import signal as sn
+from pyoti.modification.modification import Modification, GraphicalMod
+from pyoti import traces as tc
+from pyoti.evaluate import signal as sn
 
 
 class IAttachment(GraphicalMod):

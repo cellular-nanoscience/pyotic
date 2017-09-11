@@ -301,10 +301,7 @@ def create_record(calibration,
     """
 
     # Set default configfile
-    if cfgfile is None:
-        directory = os.path.dirname(globals()['__file__'])
-        cfgfile = os.path.join(directory, '..', 'etc', 'record',
-                               'GenericDataFile.cfg')
+    cfgfile = cfgfile or 'record.cfg'
 
     # Read configfile
     cfg = cf.read_cfg_file(cfgfile)
@@ -329,8 +326,8 @@ def create_record(calibration,
 
     # datasource class and parameters
     ds_class = ds_class or cf.get_cfg_class(cfg, sec='datasource',
-                                            std_mod='.data',
-                                            std_cls='GenericDataFile')
+                                        std_mod='.plugins.datasources.generic',
+                                        std_cls='GenericDataFile')
 
     if not ds_class:
         print("Could not create DataSource class defined in config file %s"
