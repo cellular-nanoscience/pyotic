@@ -8,7 +8,11 @@ import collections
 import io
 import os
 import numpy as np
-import pandas as pd
+try:
+    import pandas as pd
+    __pd__ = True
+except ImportError:
+    __pd__ = False
 import sys
 from scipy.ndimage import convolve1d
 from scipy.ndimage import median_filter

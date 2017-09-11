@@ -23,10 +23,11 @@ from .calibration import calibration as cb
 from .calibration import Calibration, CalibrationSource
 from .graph import GraphMember
 from .gui import GRS
-from .modification import GenericMod, Modification
+from .modification import Modification
 from .picklable import Attributes
 from .region import record as rc
 from .region import Region, View, Record
+from pyoti.plugins.modifications.generic import GenericMod
 
 
 def if_open(func):
@@ -221,7 +222,7 @@ class Experiment(object):
         self._graphroot._v_absdir = absdir
 
         # Update the database of an experiment file created with an old version
-        update._update_db(self)
+        update.update_db(self)
 
         # Save the current timestamp
         # now = datetime.datetime.now()
@@ -472,7 +473,7 @@ class Experiment(object):
         Add a group which will retrieve its data from a given `parent`.
         The type of the group is determined by the parameter `group_type`.
         The different types of groups are defined in the configfile (`cfgfile`,
-        defaults to "etc/group.cfg").
+        defaults to "groups.cfg").
 
         A group can be either (a) created for solely selecting a timespan of
         the data retrieved by the parent or (b) additionally modifying the
@@ -505,7 +506,7 @@ class Experiment(object):
             The configfile where the different types of groups are defined.
             Values can be overwritten by parameters `traces`, `description`,
             and `modclass`
-            Defaults to "etc/group.cfg"
+            Defaults to "groups.cfg"
         traces : str, int, list of str/int, or slice
             Select the traces the user is shown to adjust the timespan from.
             The selection of the traces does *not* influence the traces
@@ -530,17 +531,16 @@ class Experiment(object):
             Depending on the type of group, return either the added `View` or
             the `Modification`.
         """
-        if cfgfile is None:
-            directory = os.path.dirname(globals()['__file__'])
-            cfgfile = os.path.join(directory, 'etc', 'group.cfg')
+        cfgfile = cfgfile or 'groups.cfg'
         cfg = cf.read_cfg_file(cfgfile)
+
         description = description or cf.get_cfg_option(cfg, sec=group_type,
                                                        opt='description')
         traces = (traces or cf.get_cfg_list(cfg, sec=group_type, opt='traces')
                   or None)
         modclass = modclass or cf.get_cfg_class(cfg, sec=group_type,
-                                                std_mod='.modification',
-                                                cls_opt='modclass')
+                                    std_mod='.plugins.modifications.generic',
+                                    std_cls='GenericMod', cls_opt='modclass')
 
         if not modclass:
             return self.add_view(name, parent_region, group=group,

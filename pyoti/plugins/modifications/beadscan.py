@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 
-from ..modification import Modification, GraphicalMod
-from ... import helpers as hp
-from ... import traces as tc
+from pyoti.modification.modification import Modification, GraphicalMod
+from pyoti import helpers as hp
+from pyoti import traces as tc
 
 
 class IBeadscan(GraphicalMod):

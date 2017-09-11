@@ -7,10 +7,10 @@ Created on Thu Mar 10 21:36:44 2016
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ..modification import Modification, GraphicalMod
-from ... import helpers as hp
-from ...evaluate import signal as sn
-from ...evaluate import tether as tr
+from pyoti.modification.modification import Modification, GraphicalMod
+from pyoti import helpers as hp
+from pyoti.evaluate import signal as sn
+from pyoti.evaluate import tether as tr
 
 
 class IRotation(GraphicalMod):

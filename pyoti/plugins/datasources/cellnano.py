@@ -7,8 +7,8 @@ Created on Fri Mar 11 14:37:58 2016
 import numpy as np
 import os
 
-from .. import labview as lv
-from ..datasource import DataSource
+from pyoti.data import labview as lv
+from pyoti.data.datasource import DataSource
 
 
 class CNLabViewBinData(DataSource):
