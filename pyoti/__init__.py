@@ -16,7 +16,6 @@ __status__ = "beta"
 import os
 directory = os.path.dirname(globals()['__file__'])
 
-
 try:
     with open(os.path.join(directory, 'VERSION.txt')) as f:
         __version__ = f.read().strip()

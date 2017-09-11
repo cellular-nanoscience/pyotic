@@ -15,9 +15,15 @@ __status__ = "stable"
 import sys
 import os
 
+directory = os.path.dirname(globals()['__file__'])
 
-from pkg_resources import resource_string
-__version__ = resource_string(__name__, 'VERSION.txt').strip().decode("utf-8")
+try:
+    with open(os.path.join(directory, 'VERSION.txt')) as f:
+        __version__ = f.read().strip()
+except:
+    with open(os.path.join(directory, '..', 'VERSION.txt')) as f:
+        __version__ = f.read().strip()
+
 
 def version():
     """
