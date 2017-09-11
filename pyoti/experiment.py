@@ -540,7 +540,7 @@ class Experiment(object):
                   or None)
         modclass = modclass or cf.get_cfg_class(cfg, sec=group_type,
                                     std_mod='.plugins.modifications.generic',
-                                    std_cls='GenericMod', cls_opt='modclass')
+                                    cls_opt='modclass')
 
         if not modclass:
             return self.add_view(name, parent_region, group=group,
