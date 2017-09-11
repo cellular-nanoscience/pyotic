@@ -4,10 +4,11 @@ scipy >= 0.14.0
 matplotlib >= 1.5.1
 ipywidgets >= 4.0.3
 cloudpickle >= 0.1.1
-pint == 0.5.2
+appdirs >= 1.4.0
+pint >= 0.5.2
 lmfit >= 0.9.3
 
-#    python3 (v 3.4 tested)
+#    python3 (v 3.5 tested)
 #    ipython (v 4.0.0, 4.0.1, 4.0.2, 4.1.1)
 #    
 #    jupyter (tested 1.0.0)
