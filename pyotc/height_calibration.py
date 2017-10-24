@@ -795,7 +795,7 @@ class HeightFitResult(object):
     def get_params(self):
         return self.minimizer.params
 
-    @property
+    @roperty
     def params(self):
         return self.get_params()
 
@@ -2446,7 +2446,7 @@ class HeightCalibration(object):
                               height_unit=None,
                               **kws):
         """
-        try to determine the focal shift from the oscillation of the signal.
+        Try to determine the focal shift from the oscillation of the signal.
 
         Uses pyotc.focal_shift.get_focal_shift(). 
 
@@ -2468,6 +2468,11 @@ class HeightCalibration(object):
         report_fs : bool
             Wheter to print the found focal shift.
         plot_fit : bool
+
+        Notes 
+        -----
+        The used data does not take the unmasked data, which is defined through
+        HC._mask. Instead the idx_slice can be used to define the used data.
         """
         heights = self.get_heights(name=name, nomask=True,
                                    unit=height_unit or self._height_unit)
