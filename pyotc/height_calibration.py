@@ -2474,7 +2474,8 @@ class HeightCalibration(object):
         if not idx_slice:
             idx_slice = slice(len(heights))
 
-        signal = signal or self.get_dissens(name, nomask=True)
+        if signal is None:
+            signal = self.get_dissens(name, nomask=True)
 
         wl = wavelength or self.get_wavelength(unit=wavelength_unit)
         
