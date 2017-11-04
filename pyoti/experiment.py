@@ -668,7 +668,7 @@ class Experiment(object):
 
     @if_open
     def show_view(self, view, group=None, traces=None, description=None,
-                     xlim=None):
+                  xlim=None):
         """
         Graphically inspect a View.
 
@@ -701,8 +701,7 @@ class Experiment(object):
             if description is None:
                 description = view.name
             self._grs.init_ifig(view.timevector,
-                                view.get_data(traces=traces,
-                                                     copy=False),
+                                view.get_data(traces=traces, copy=False),
                                 view.samplingrate,
                                 traces,
                                 xlim=xlim,
