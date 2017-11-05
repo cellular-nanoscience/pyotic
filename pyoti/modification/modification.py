@@ -8,6 +8,8 @@ import collections
 import matplotlib.pyplot as plt
 import numpy as np
 from abc import ABCMeta, abstractmethod
+from IPython.core.display import display
+
 
 from .. import gui
 from .. import helpers as hp
@@ -79,7 +81,8 @@ class GraphicalMod(object):
 
         # show the figure
         if show:
-            self.figure.show()
+            # self.figure.show()
+            display(self.figure)
 
     def update(self, **kwargs):
         self.update_fig(**kwargs)

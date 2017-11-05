@@ -334,7 +334,8 @@ class GRS(object):
                                      description=description)
 
         # show the interactive figure
-        self.ifigure.show()
+        # self.ifigure.show()
+        display(self.ifigure)
 
     def _calculate_plot_params(self, rows, columns):
         """

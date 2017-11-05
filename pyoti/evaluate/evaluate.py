@@ -8,6 +8,8 @@ import collections
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from IPython.core.display import display
+
 
 from . import signal as sn
 from .. import gui
@@ -307,7 +309,8 @@ class Evaluator(object):
         self.rfigure = self._rfigure(legend=legend)
 
         if show:
-            self.rfigure.show()
+            # self.rfigure.show()
+            display(self.rfigure)
 
     def _rfigure(self, legend=True):
         figure = None
