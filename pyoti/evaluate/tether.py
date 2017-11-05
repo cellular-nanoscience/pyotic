@@ -7,7 +7,6 @@ Created on Fri Mar 11 13:36:39 2016
 import matplotlib.pyplot as plt
 import numpy as np
 from ipywidgets import interact, IntSlider
-from IPython.core.display import display
 
 from . import signal as sn
 from . import dna
@@ -618,8 +617,7 @@ class Tether(Evaluator):
             ax.set_ylim(ylim)
 
         if show:
-            # self.fe_figure.show()
-            display(self.fe_figure)
+            self.fe_figure.show()
 
     def autolimit(self, samples=None, e=None, f=None, xlim=None, ylim=None,
                   set_limits=True):
