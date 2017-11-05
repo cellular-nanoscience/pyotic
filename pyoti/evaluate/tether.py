@@ -947,14 +947,13 @@ class Tether(Evaluator):
 
         displacementXYZ \
             = self.calibration.displacement(psdXYZ, positionZ=positionZ)
+        # 2D or 3D calculation of the distance in Z
+        if twoD:
+            displacementXYZ[:, Z] = 0.0
         forceXY_Z = self.calibration.force(displacementXYZ,
                                            positionZ=positionZ)
 
-        # 2D or 3D calculation of the force
-        if twoD:
-            fXYZ = forceXY_Z[:, XY]
-        else:
-            fXYZ = forceXYZ(forceXY_Z)
+        fXYZ = forceXYZ(forceXY_Z)
         f = force(fXYZ, positionXY)
 
         return f
@@ -1000,16 +999,14 @@ class Tether(Evaluator):
 
         displacementXYZ \
             = self.calibration.displacement(psdXYZ, positionZ=positionZ)
+        # 2D or 3D calculation of the distance in Z
+        if twoD:
+            displacementXYZ[:, Z] = 0.0
         distXYZ = distanceXYZ(positionXYZ, displacementXYZ,
                               self.calibration.radius,
                               self.calibration.focalshift)
 
-        # 2D or 3D calculation of the extension
-        if twoD:
-            dist = distance(distXYZ[:, XY], positionXY)
-        else:
-            dist = distance(distXYZ, positionXY)
-
+        dist = distance(distXYZ, positionXY)
         e = extension(dist, self.calibration.radius)
 
         return e
@@ -1036,24 +1033,18 @@ class Tether(Evaluator):
 
         displacementXYZ \
             = self.calibration.displacement(psdXYZ, positionZ=positionZ)
+        # 2D or 3D calculation of the distance in Z
+        if twoD:
+            displacementXYZ[:, Z] = 0.0
         distXYZ = distanceXYZ(positionXYZ, displacementXYZ,
                               self.calibration.radius,
                               self.calibration.focalshift)
 
-        # 2D or 3D calculation of the extension
-        if twoD:
-            dist = distance(distXYZ[:, XY], positionXY)
-        else:
-            dist = distance(distXYZ, positionXY)
-
+        dist = distance(distXYZ, positionXY)
         forceXY_Z = self.calibration.force(displacementXYZ,
                                            positionZ=positionZ)
 
-        # 2D or 3D calculation of the force
-        if twoD:
-            fXYZ = forceXY_Z[:, XY]
-        else:
-            fXYZ = forceXYZ(forceXY_Z)
+        fXYZ = forceXYZ(forceXY_Z)
 
         e = extension(dist, self.calibration.radius)
         f = force(fXYZ, positionXY)
@@ -1211,6 +1202,7 @@ def distanceXYZ(positionXYZ, displacementXYZ, radius=0.0, focalshift=1.0,
     # distance from attachment point to center of bead
     distanceXYZ[:, 0] -= displacementXYZ[:, 0]  # attachmentX - displacementX
     distanceXYZ[:, 1] -= displacementXYZ[:, 1]  # attachmentY - displacementY
+
     distanceXYZ[:, 2] = (- positionXYZ[:, 2] * focalshift
                          + radius
                          # distanceZ + radius + displacementZ
