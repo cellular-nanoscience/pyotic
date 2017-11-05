@@ -1174,7 +1174,7 @@ def force(forceXYZ, positionXY):
     signFXY = np.sign(forceXYZ[:, XY]) * np.sign(positionXY)
     # forceZ negative/positive, irrespective of positionZ!
     if forceXYZ.shape[1] == 3:
-        signFZ = np.sign(forceXYZ[:, Z])
+        signFZ = np.sign(forceXYZ[:, hp.slicify(Z)])
         signF = np.hstack((signFXY, signFZ))
     else:
         signF = signFXY
@@ -1246,7 +1246,7 @@ def distance(distanceXYZ, positionXY):
     signDXY = np.sign(distanceXYZ[:, XY]) * np.sign(positionXY)
     # distanceZ negative/positive, irrespective of positionZ!
     if distanceXYZ.shape[1] == 3:
-        signDZ = np.sign(distanceXYZ[:, Z])
+        signDZ = np.sign(distanceXYZ[:, hp.slicify(Z)])
         signD = np.hstack((signDXY, signDZ))
     else:
         signD = signDXY
