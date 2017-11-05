@@ -1162,13 +1162,9 @@ def force(forceXYZ, positionXY):
     """
     # sign of forceXY depends on positionXY, important for noise of force
     # around +/- 0
-    signFXY = np.sign(forceXYZ[:, XY]) * np.sign(positionXY)
     # forceZ negative/positive, irrespective of positionZ!
-    if forceXYZ.shape[1] == 3:
-        signFZ = np.sign(forceXYZ[:, hp.slicify(Z)])
-        signF = np.hstack((signFXY, signFZ))
-    else:
-        signF = signFXY
+    signF = np.sign(forceXYZ)
+    signF[:, XY] = np.sign(forceXYZ[:, XY]) * np.sign(positionXY)
 
     # square the forces and account for the signs
     force_sq = forceXYZ**2 * signF
@@ -1235,13 +1231,9 @@ def distance(distanceXYZ, positionXY):
     """
     # sign of distanceXY depends on positionXY, important for noise of dist
     # around +/- 0
-    signDXY = np.sign(distanceXYZ[:, XY]) * np.sign(positionXY)
     # distanceZ negative/positive, irrespective of positionZ!
-    if distanceXYZ.shape[1] == 3:
-        signDZ = np.sign(distanceXYZ[:, hp.slicify(Z)])
-        signD = np.hstack((signDXY, signDZ))
-    else:
-        signD = signDXY
+    signD = np.sign(distanceXYZ)
+    signD[:, XY] = np.sign(distanceXYZ[:, XY]) * np.sign(positionXY)
 
     # square the distances and account for the signs
     distance_sq = distanceXYZ**2 * signD
