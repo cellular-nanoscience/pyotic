@@ -469,7 +469,7 @@ class Tether(Evaluator):
         return fig
 
     def force_extension_pair(self, i, axis=None, direction=None, decimate=None,
-                             time=False):
+                             time=False, twoD=False):
         """
         Calculate the force extension pair with index `i`.
 
@@ -504,11 +504,12 @@ class Tether(Evaluator):
             Cycle is 'release'.
         """
         fe_pair = self.force_extension_pairs(axis=axis, direction=direction,
-                                             i=i, decimate=decimate, time=time)
+                                             i=i, decimate=decimate, time=time,
+                                             twoD=twoD)
         return next(fe_pair)
 
     def force_extension_pairs(self, axis=None, direction=None, i=None,
-                              decimate=None, time=False):
+                              decimate=None, time=False, twoD=False):
         """
         Return a generator for force extension values of stress release pairs.
 
@@ -558,7 +559,7 @@ class Tether(Evaluator):
         samples = slice(start, stop)
 
         # Get extension, force, and stress/release pairs
-        e_f = self._force_extension(samples=samples) * 1000  # nm, pN
+        e_f = self._force_extension(samples=samples, twoD=twoD) * 1000  # nm, pN
         e = e_f[:, 0]
         f = e_f[:, 1]
 
@@ -928,11 +929,11 @@ class Tether(Evaluator):
         Force in nN, that is acting on the tether
         """
         positionZ = self.get_data(traces='positionZ')
-        force3D = self.calibration.force(self.displacementXYZ,
-                                         positionZ=positionZ)
-        return forceXYZ(force3D)
+        forceXY_Z = self.calibration.force(self.displacementXYZ,
+                                           positionZ=positionZ)
+        return forceXYZ(forceXY_Z)
 
-    def _force(self, samples=None):
+    def _force(self, samples=None, twoD=False):
         """
         Magnitude of the force in nN acting on the tethered molecule (1D
         numpy.ndarray).
@@ -946,9 +947,14 @@ class Tether(Evaluator):
 
         displacementXYZ \
             = self.calibration.displacement(psdXYZ, positionZ=positionZ)
-        force3D = self.calibration.force(displacementXYZ,
-                                         positionZ=positionZ)
-        fXYZ = forceXYZ(force3D)
+        forceXY_Z = self.calibration.force(displacementXYZ,
+                                           positionZ=positionZ)
+
+        # 2D or 3D calculation of the force
+        if twoD:
+            fXYZ = forceXY_Z[:, XY]
+        else:
+            fXYZ = forceXYZ(forceXY_Z)
         f = force(fXYZ, positionXY)
 
         return f
@@ -980,7 +986,7 @@ class Tether(Evaluator):
         positionXY = self.get_data(traces='positionXY')
         return distance(self.distanceXYZ, positionXY)
 
-    def _extension(self, samples=None):
+    def _extension(self, samples=None, twoD=False):
         """
         Extension in µm of the tethered molecule (1D numpy.ndarray).
         """
@@ -997,7 +1003,13 @@ class Tether(Evaluator):
         distXYZ = distanceXYZ(positionXYZ, displacementXYZ,
                               self.calibration.radius,
                               self.calibration.focalshift)
-        dist = distance(distXYZ, positionXY)
+
+        # 2D or 3D calculation of the extension
+        if twoD:
+            dist = distance(distXYZ[:, XY], positionXY)
+        else:
+            dist = distance(distXYZ, positionXY)
+
         e = extension(dist, self.calibration.radius)
 
         return e
@@ -1009,7 +1021,7 @@ class Tether(Evaluator):
         """
         return self._extension()
 
-    def _force_extension(self, samples=None):
+    def _force_extension(self, samples=None, twoD=False):
         """
         Extension (µm, first column) of and force (nN, second column) acting
         on the tethered molecule (2D numpy.ndarray).
@@ -1027,10 +1039,22 @@ class Tether(Evaluator):
         distXYZ = distanceXYZ(positionXYZ, displacementXYZ,
                               self.calibration.radius,
                               self.calibration.focalshift)
-        dist = distance(distXYZ, positionXY)
-        force3D = self.calibration.force(displacementXYZ,
-                                         positionZ=positionZ)
-        fXYZ = forceXYZ(force3D)
+
+        # 2D or 3D calculation of the extension
+        if twoD:
+            dist = distance(distXYZ[:, XY], positionXY)
+        else:
+            dist = distance(distXYZ, positionXY)
+
+        forceXY_Z = self.calibration.force(displacementXYZ,
+                                           positionZ=positionZ)
+
+        # 2D or 3D calculation of the force
+        if twoD:
+            fXYZ = forceXY_Z[:, XY]
+        else:
+            fXYZ = forceXYZ(forceXY_Z)
+
         e = extension(dist, self.calibration.radius)
         f = force(fXYZ, positionXY)
 
@@ -1111,6 +1135,7 @@ class Tether(Evaluator):
     def releases(self):
         return self.sections(cycle='release')
 
+
 # Define constants for convenient handling
 X = 0
 Y = 1
@@ -1121,30 +1146,38 @@ YZ = hp.slicify([Y, Z])
 XYZ = hp.slicify([X, Y, Z])
 
 
-def forceXYZ(force3D, copy=True):
+def forceXYZ(forceXY_Z, copy=True):
     """
     Force in nN, that is acting on the tether
     """
     if copy:
-        forceXYZ = force3D.copy()
+        forceXYZ = forceXY_Z.copy()
     else:
-        forceXYZ = force3D
+        forceXYZ = forceXY_Z
     # stressing on the bead (negative displacement) corresponds to a positive
     # force in Z
-    forceXYZ[:, Z] = - 1.0 * force3D[:, Z]
+    forceXYZ[:, Z] = - 1.0 * forceXY_Z[:, Z]
     return forceXYZ
 
 
 def force(forceXYZ, positionXY):
     """
     Returns force.
+
+    Parameters
+    ----------
+    forceXYZ : 2D numpy.ndarray of type float
+        forceXYZ.shape[1] can consist of either 3 (XYZ) or 2 (XY) axes
     """
     # sign of forceXY depends on positionXY, important for noise of force
     # around +/- 0
     signFXY = np.sign(forceXYZ[:, XY]) * np.sign(positionXY)
     # forceZ negative/positive, irrespective of positionZ!
-    signFZ = np.sign(forceXYZ[:, hp.slicify(Z)])
-    signF = np.hstack((signFXY, signFZ))
+    if forceXYZ.shape[1] == 3:
+        signFZ = np.sign(forceXYZ[:, Z])
+        signF = np.hstack((signFXY, signFZ))
+    else:
+        signF = signFXY
 
     # square the forces and account for the signs
     force_sq = forceXYZ**2 * signF
@@ -1202,13 +1235,21 @@ def distanceXYZ(positionXYZ, displacementXYZ, radius=0.0, focalshift=1.0,
 def distance(distanceXYZ, positionXY):
     """
     Calculate the distance of the attachment point to the bead center.
+
+    Parameters
+    ----------
+    distanceXYZ : 2D numpy.ndarray of type float
+        distanceXYZ.shape[1] can consist of either 3 (XYZ) or 2 (XY) axes
     """
     # sign of distanceXY depends on positionXY, important for noise of dist
     # around +/- 0
     signDXY = np.sign(distanceXYZ[:, XY]) * np.sign(positionXY)
     # distanceZ negative/positive, irrespective of positionZ!
-    signDZ = np.sign(distanceXYZ[:, hp.slicify(Z)])
-    signD = np.hstack((signDXY, signDZ))
+    if distanceXYZ.shape[1] == 3:
+        signDZ = np.sign(distanceXYZ[:, Z])
+        signD = np.hstack((signDXY, signDZ))
+    else:
+        signD = signDXY
 
     # square the distances and account for the signs
     distance_sq = distanceXYZ**2 * signD
