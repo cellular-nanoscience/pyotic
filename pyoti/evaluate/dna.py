@@ -141,8 +141,8 @@ def force_extension(bps, pitch=0.338e-9, L_p=43.3e-9, T=298.2, min_ext=0.5,
     ForceExtension
         The namedtuple consists of extension and force in (m)
     """
-    x = np.linspace(min_ext, max_ext, samples)
     L_0 = bps * pitch  # m contour length
+    x = np.linspace(min_ext * L_0, max_ext * L_0, samples)
     F = worm_like_chain(x, L_0, L_p, T)
 
     # K_0=1246e-12  # N elastic modulus
