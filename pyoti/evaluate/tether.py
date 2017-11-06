@@ -748,7 +748,7 @@ class Tether(Evaluator):
         # Calculate force extension of a dna with a known length and plot it
         if bps:
             x, F = dna.force_extension(bps=bps)
-            ax.lines[2].set_data(x, F)
+            ax.lines[2].set_data(x*1e9, F*1e12)
         else:
             ax.lines[2].set_data([0], [0])
 
