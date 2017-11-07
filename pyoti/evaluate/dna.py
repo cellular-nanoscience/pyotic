@@ -290,7 +290,7 @@ def get_DNA_fit_params(bps, pitch=None, L_p=None, T=None, vary=None, **kwargs):
         used to calculate the initial value (start value) of the contour length
         'L_0' (i.e. `bps`*`pitch`). See also parameter `params`.
     L_p : float (optional)
-        Persistence length in nm (defaults to 0.338e-9 nm).
+        Persistence length in m (defaults to 0.338e-9 m).
     T : float
         Temperature in K (defaults to 298 K).
     vary : dict (optional)
@@ -340,7 +340,10 @@ def fit_force_extension(e, f, bps, model_func=None, params=None, min_e=None,
         The force (N).
     bps : float
         The number of basepairs of the DNA. If you do not know the number of
-        basepairs, try an upper estimate to fit the data.
+        basepairs, try an upper estimate to fit the data. The number of
+        basepairs is used to calculate the start value for the contour length
+        L_0 for the fitting procedure. See also the function
+        `get_DNA_fit_params.
     model_func : func
         Set model function, that should have the header model_func(e, **params)
         and return f. Defauts to the function `worm_like_chain`.
@@ -356,9 +359,8 @@ def fit_force_extension(e, f, bps, model_func=None, params=None, min_e=None,
         Maximum force in N (defaults to 15e-12) to be used to fit the data.
     max_e_dyn_L0 : bool
         Set `max_e` dynamically to the contour length 'L_0' for every fitting
-        evaluation. 'L_0' is calculated from the number of basepairs `bps` and
-        the pitch of one basepair (bps*pitch). See also the parameter function
-        `get_DNA_fit_params`.
+        evaluation. If L0 is greater than the argument `max_e`, the value of
+        `max_e` will be used, instead.
     verbose : bool
         Be verbose about the fit result.
     **kwargs
