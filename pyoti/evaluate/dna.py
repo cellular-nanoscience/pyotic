@@ -349,15 +349,16 @@ def fit_force_extension(e, f, bps, model_func=None, params=None, min_e=None,
         The parameters to be fitted (defaults to the output of
         `get_DNA_fit_params(bps, **kwargs)`).
     min_e : float
-        Minimum extension in m (defaults to 0.01e-9) to be used to fit the
+        Minimum extension in m (defaults to float(-inf)) to be used to fit the
         model.
     max_e : float
-        Maximum extension in m (defaults to +Inf) to be used to fit the data.
+        Maximum extension in m (defaults to float(+inf)) to be used to fit the
+        data. See also parameter `max_e_dyn_L0`.
     max_f : float
         Maximum force in N (defaults to 15e-12) to be used to fit the data.
     max_e_dyn_L0 : bool
         Set `max_e` dynamically to the contour length 'L_0' for every fitting
-        evaluation. If L0 is greater than the argument `max_e`, the value of
+        evaluation. If L0 is greater than the parameter `max_e`, the value of
         `max_e` will be used, instead.
     verbose : bool
         Be verbose about the fit result.
@@ -370,7 +371,7 @@ def fit_force_extension(e, f, bps, model_func=None, params=None, min_e=None,
 
     # Crop the data. Choose boundaries to avoid nan values and a max force of
     # 15 pN, up to where the wlc model is valid.
-    min_x = min_e or 0.01e-9
+    min_x = min_e
     max_x = max_e
     max_y = max_f or 15e-12
     e, f = crop_x_y(e, f, min_x=min_x, max_x=max_x, max_y=max_y,
