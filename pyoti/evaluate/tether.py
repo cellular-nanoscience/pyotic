@@ -559,7 +559,7 @@ class Tether(Evaluator):
         samples = slice(start, stop)
 
         # Get extension, force, and stress/release pairs
-        e_f = self._force_extension(samples=samples, twoD=twoD) * 1000  # nm, pN
+        e_f = self._force_extension(samples=samples, twoD=twoD) * 1000  # nm,pN
         e = e_f[:, 0]
         f = e_f[:, 1]
 

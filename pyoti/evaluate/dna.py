@@ -5,8 +5,11 @@ Created on Fri Mar 11 14:29:39 2016
 @author: Tobias Jachowski
 """
 import numpy as np
-from scipy import constants
+import operator
 from collections import namedtuple
+from lmfit import minimize, Parameters, fit_report
+from scipy import constants
+
 
 k_B = constants.value('Boltzmann constant')
 ForceExtension = namedtuple('ForceExtension', ['extension', 'force'])
@@ -14,21 +17,26 @@ ForceExtension = namedtuple('ForceExtension', ['extension', 'force'])
 
 def worm_like_chain(x, L_0, L_p=50e-9, T=298):
     """
-    Marko, J.F.; Eric D. Siggia (1995). "Stretching DNA". Macromolecules. 28:
-    8759–8770. doi:10.1021/ma00130a008
+    A worm-like chain model.
 
-    http://biocurious.com/2006/07/04/wormlike-chains
+    Marko, J.F.; Eric D. Siggia. "Stretching DNA". Macromolecules. 1995. 28:
+    8759–8770. doi:10.1021/ma00130a008
 
     Parameters
     ----------
     x : float
-        extension (m)
+        Extension (m)
     L_0 : float
-        contour length (m)
+        Contour length (m)
     L_p : float
-        persistence length (m)
+        Persistence length (m)
     T : float
-        temperature (K)
+        Temperature (K)
+
+    Returns
+    -------
+    1D numpy.ndarray of type float
+        Force (N).
     """
     F = k_B * T / L_p * (1 / (4 * (1 - x / L_0)**2) - 1/4 + x / L_0)
 
@@ -37,19 +45,26 @@ def worm_like_chain(x, L_0, L_p=50e-9, T=298):
 
 def worm_like_chain_1p(x, L_0, L_p=50e-9, T=298):
     """
-    Petrosyan, R. (2016). "Improved approximations for some polymer extension
-    models". Rehol Acta. doi:10.1007/s00397-016-0977-9
+    An improved worm-like chain model.
+
+    Petrosyan, R. "Improved approximations for some polymer extension
+    models". Rehol Acta. 2016. doi:10.1007/s00397-016-0977-9
 
     Parameters
     ----------
     x : float
-        extension (m)
+        Extension (m)
     L_0 : float
-        contour length (m)
+        Contour length (m)
     L_p : float
-        persistence length (m)
+        Persistence length (m)
     T : float
-        temperature (K)
+        Temperature (K)
+
+    Returns
+    -------
+    1D numpy.ndarray of type float
+        Force (N).
     """
     F = k_B * T / L_p * (1 / (4 * (1 - x / L_0)**2) - 1/4 + x / L_0
                          - 0.8 * (x / L_0)**2.15)
@@ -61,7 +76,11 @@ def worm_like_chain_1p(x, L_0, L_p=50e-9, T=298):
 def twistable_wlc(F, L_0, x=None, L_p=43.3e-9, K_0=1246e-12, S=1500e-12,
                   C=440e-30, T=298.2):
     """
-    Twistable worm like chain model Gross et al. 2011
+    The twistable worm-like chain model.
+    
+    Gross, P.; Laurens, N.; Oddershede, L. B.; Bockelmann, U.; Peterman, E. J.
+    & Wuite, G. J. "Quantifying how DNA stretches, melts and changes twist
+    under tension". Nature Physics, Nature Research, 2011, 7, 731-736
 
     Paramaters
     ----------
@@ -117,6 +136,8 @@ def twistable_wlc(F, L_0, x=None, L_p=43.3e-9, K_0=1246e-12, S=1500e-12,
 def force_extension(bps, pitch=0.338e-9, L_p=43.3e-9, T=298.2, min_ext=0.5,
                     max_ext=0.978, samples=1000):
     """
+    Calculate force extension data for a DNA, assuming a worm-like chain model.
+
     Parameters
     ----------
     bps : int
@@ -161,7 +182,6 @@ def twistable_force_extension(bps, pitch=0.338e-9, L_p=43.3e-9, K_0=1246e-12,
     return ForceExtension(extension=x, force=F)
 
 
-import operator
 def crop_x_y(x, y=None, min_x=None, max_x=None, min_y=None, max_y=None,
              include_bounds=True):
     """
@@ -181,12 +201,20 @@ def crop_x_y(x, y=None, min_x=None, max_x=None, min_y=None, max_y=None,
         The minimum value of `y`.
     max_y : float
         The maximum value of `y`.
+    include_bounds : bool
+        Whether to include or exlude min/max values in the output arrays.
 
     Returns
     -------
     tuple of 2 1D numpy.ndarray of type float
         The cropped values (x, y).
     """
+    # Reduce calculation time, if no min/max values are given
+    if min_x == None and max_x == None and min_y == None and max_y == None:
+        if y is None:
+            return x
+        else:
+            return x, y
     if include_bounds:
         ol = operator.le
         og = operator.ge
@@ -204,21 +232,32 @@ def crop_x_y(x, y=None, min_x=None, max_x=None, min_y=None, max_y=None,
     i_y = ol(y, max_y)
     i_y = np.logical_and(i_y, og(y, min_y))
     i = np.logical_and(i_x, i_y)
-    return (x[i], y[i])
+    return x[i], y[i]
 
 
-def residual(params, model_func, x, data, eps=None):
+def residual(params, model_func, x, data, crop_x_param=None, eps=None):
     """
     Calculate the residuals of a model and given data.
 
     Parameters
     ----------
-    fit_func : function
+    params : lmfit.Parameters
+    model_func : function
+        Function with the header model_func(x, **params). It should return
+        a 1D numpy.ndarray of type float.
     x : 1D numpy.ndarray of type float
-    params : dict
     data : 1D numpy.ndarray of type float
+    crop_x_param : str
+        Crop `x` and `data` according to the parameter in `params` prior to
+        the model calculation. See function `crop_x_y()`, especially the
+        paramater `max_x`.
     eps : float
     """
+    # Crop the X data according to a fit parameter
+    max_x = crop_x_param or params[crop_x_param]
+    x, data = crop_x_y(x, data, max_x=max_x, include_bounds=False)
+
+    # Calculate data according to the model function
     model = model_func(x, **params)
 
     # Calculate the residuals of the model and the given data
@@ -227,49 +266,129 @@ def residual(params, model_func, x, data, eps=None):
     return (model - data) / eps
 
 
-def crop_fe_wlc_dna(e, f, L_0, min_e=None, max_e=None, max_f=None):
-    # Choose boundaries to avoid nan values and max force of 25 pN, up to where
-    # wlc is valid
-    min_x = min_e or 0.01e-9
-    max_x = max_e or L_0
-    max_f = max_f or 15e-12
-    return crop_x_y(e, f, min_x=min_x, max_x=max_x, max_y=max_f,
-                    include_bounds=False)
+def get_DNA_fit_params(bps, pitch=None, L_p=None, T=None, vary=None, **kwargs):
+    """
+    Create a default `lmfit.Parameters` instance, which can be used to fit DNA
+    force extension data with lmfit.
 
+    The default parameters calculated are the contour length (L_0), the
+    persistence length (L_p) and the temperature (T). The contour length is
+    calculated from the number of basepairs (bps) and the pitch (pitch) of the
+    DNA.
 
-def residual_wlc_dna(params, model_func, e, f, min_e=None, max_e=None,
-                     max_f=None):
-    # Crop data to be fitted
-    #   a) avoid nan values, and
-    #   b) limit to force where model is valid
-    L_0 = params['L_0']
-    _e, _f = crop_fe_wlc_dna(e, f, L_0, min_e, max_e, max_f)
-    return residual(params, model_func, _e, _f)
+    Parameters
+    ----------
+    bps : float
+        Number of basepairs of the DNA to be fitted. The parameter `bps` is
+        used to calculate the initial value (start value) of the contour length
+        'L_0' (i.e. `bps`*`pitch`). See also parameter `params`.
+    pitch : float (optional)
+        Pitch in nm (defaults to 0.338e-9 nm). The parameter `pitch` is
+        used to calculate the initial value (start value) of the contour length
+        'L_0' (i.e. `bps`*`pitch`). See also parameter `params`.
+    L_p : float (optional)
+        Persistence length in nm (defaults to 0.338e-9 nm).
+    T : float
+        Temperature in K (defaults to 298 K).
+    vary : dict (optional)
+        A dictionary setting the Parameters, which should be varied during the
+        fitting process (defaults to {'L_0': True, 'L_p': True, 'T': False}).
+        As an alternative to the key 'L_0', 'bps' can be used.
+    **kwargs
+        Additional parameters for compatibility reasons that are neglected.
 
-
-from lmfit import minimize, Parameters, fit_report
-def fit_force_extension(e, f, bps, pitch=0.338e-9, L_p=50e-9, T=298,
-                        model_func=None, fix_L_0=False, fix_L_p=False,
-                        fix_T=True, min_e=None, max_e=None, max_f=None,
-                        verbose=False):
+    Returns
+    -------
+    lmfit.Parameters
+        Lmfit Parameters instance containing the Parameter objects. The default
+        is a Parameters instance, containing the Parameter objects 'L_0' (i.e.
+        `bps`*`pitch`), `L_p`, and `T`, initialized with the corresponding
+        function parameters.
+    """
+    pitch = pitch or 0.338e-9
+    L_p = L_p or 50e-9
+    T = T or 298
     # Calculate the contour length of the DNA
     L_0 = bps * pitch  # m contour length
 
+    vary = vary or {}
+    vary_L_0_default = vary.get('bps', True)
+
     params = Parameters()
-    params.add('L_0', value=L_0, vary=not fix_L_0)
-    params.add('L_p', value=L_p, vary=not fix_L_p)
-    params.add('T', value=T, vary=not fix_T)
+    params.add('L_0', value=L_0, vary=vary.get('L_0', vary_L_0_default))
+    params.add('L_p', value=L_p, vary=vary.get('L_p', True))
+    params.add('T', value=T, vary=vary.get('T', False))
 
+    return params
+
+
+def fit_force_extension(e, f, bps, model_func=None, params=None, min_e=None,
+                        max_e=None, max_f=None, crop_for_wlc=True,
+                        verbose=False, **kwargs):
+    """
+    Fit a model function, e.g. a worm-like chain model, to force extension data
+    of DNA.
+
+    Parameters
+    ----------
+    e : 1D numpy.ndarray of type float
+        The extension (m).
+    f : 1D numpy.ndarray of type float
+        The force (N).
+    bps : float
+        The number of basepairs of the DNA. If you do not know the number of
+        basepairs, try an upper estimate to fit the data.
+    model_func : func
+        Set model function, that should have the header model_func(e, **params)
+        and return f. Defauts to the function `worm_like_chain`.
+    params : lmfit.Parameters
+        The parameters to be fitted (defaults to the output of
+        `get_DNA_fit_params(bps, **kwargs)`).
+    min_e : float
+        Minimum extension in m (defaults to 0.01e-9) to be used to fit the
+        model.
+    max_e : float
+        Maximum extension in m (defaults to +Inf) to be used to fit the data.
+    max_f : float
+        Maximum force in N (defaults to 15e-12) to be used to fit the data.
+    crop_for_wlc : float
+        Choose to crop the extension with the minimum of either the given
+        `max_e` value or the contour length 'L_0', which is calculated from the
+        number of basepairs `bps` and the pitch of one basepair `pitch`
+        (bps*pitch). See also the parameter function `get_DNA_fit_params`.
+    verbose : bool
+        Be verbose about the fit result.
+    **kwargs
+        Arguments passed to the parameter function `get_DNA_fit_params`.
+    """
+    # Choose the model function and initialize the fit parameters
     model_func = model_func or worm_like_chain
+    params = params or get_DNA_fit_params(bps, **kwargs)
 
-    # Do the fitting ...
-    out = minimize(residual_wlc_dna, params, args=(model_func, e, f, min_e,
-                                                   max_e, max_f))
+    # Crop the data. Choose boundaries to avoid nan values and a max force of
+    # 15 pN, up to where the wlc model is valid.
+    min_x = min_e or 0.01e-9
+    max_x = max_e
+    max_y = max_f or 15e-12
+    e, f = crop_x_y(e, f, min_x=min_x, max_x=max_x, max_y=max_y,
+                    include_bounds=False)
+
+    # Choose the parameters for the function residual, which calculates the
+    # difference of the model function to the given data
+    residual_args = model_func, e, f,
+    if crop_for_wlc:
+        # Crop e and f data variates to contour length 'L_0', i.e. up to where
+        # the wlc model is valid
+        residual_args = model_func, e, f, 'L_0'
+
+    # Do the fitting:
+    #   minimize -> residual(params, residual_args) -> model_func(e, params)
+    out = minimize(residual, params, args=residual_args)
 
     if verbose:
         print(fit_report(out))
         print('[[DNA related info]]')
         print('    Number of base-pairs: {:.0f}'.format(
-                                        np.round(out.params['L_0'] / pitch)))
+                            np.round(out.params['L_0'] / params['L_0'] * bps)))
 
     return out
