@@ -254,7 +254,10 @@ def residual(params, model_func, x, data, crop_x_param=None, eps=None):
     eps : float
     """
     # Crop the X data according to a fit parameter
-    max_x = crop_x_param or params[crop_x_param]
+    max_x = None
+    if crop_x_param:
+        max_x = params[crop_x_param]
+        
     x, data = crop_x_y(x, data, max_x=max_x, include_bounds=False)
 
     # Calculate data according to the model function
