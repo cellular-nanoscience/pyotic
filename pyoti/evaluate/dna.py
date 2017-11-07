@@ -77,7 +77,7 @@ def twistable_wlc(F, L_0, x=None, L_p=43.3e-9, K_0=1246e-12, S=1500e-12,
                   C=440e-30, T=298.2):
     """
     The twistable worm-like chain model.
-    
+
     Gross, P.; Laurens, N.; Oddershede, L. B.; Bockelmann, U.; Peterman, E. J.
     & Wuite, G. J. "Quantifying how DNA stretches, melts and changes twist
     under tension". Nature Physics, Nature Research, 2011, 7, 731-736
@@ -210,7 +210,7 @@ def crop_x_y(x, y=None, min_x=None, max_x=None, min_y=None, max_y=None,
         The cropped values (x, y).
     """
     # Reduce calculation time, if no min/max values are given
-    if min_x == None and max_x == None and min_y == None and max_y == None:
+    if min_x is None and max_x is None and min_y is None and max_y is None:
         if y is None:
             return x
         else:
@@ -250,11 +250,11 @@ def residual(params, model_func, x, data, min_x_param=None, max_x_param=None,
     data : 1D numpy.ndarray of type float
     min_x_param : str
         Crop `x` (and `data`) with the function `crop_x_y()` (paramater
-        `min_x`) according to the parameter with the key `min_x_param` in 
+        `min_x`) according to the parameter with the key `min_x_param` in
         `params`,  before calculating the model.
     max_x_param : str
         Crop `x` (and `data`) with the function `crop_x_y()` (paramater
-        `max_x`) according to the parameter with the key `max_x_param` in 
+        `max_x`) according to the parameter with the key `max_x_param` in
         `params`,  before calculating the model.
     eps : float
     """
