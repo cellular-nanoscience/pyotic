@@ -235,7 +235,8 @@ def crop_x_y(x, y=None, min_x=None, max_x=None, min_y=None, max_y=None,
     return x[i], y[i]
 
 
-def residual(params, model_func, x, data, max_x_param=None, eps=None):
+def residual(params, model_func, x, data, min_x_param=None, max_x_param=None,
+             eps=None):
     """
     Calculate the residuals of a model and given data.
 
@@ -247,6 +248,10 @@ def residual(params, model_func, x, data, max_x_param=None, eps=None):
         a 1D numpy.ndarray of type float.
     x : 1D numpy.ndarray of type float
     data : 1D numpy.ndarray of type float
+    min_x_param : str
+        Crop `x` (and `data`) with the function `crop_x_y()` (paramater
+        `min_x`) according to the parameter with the key `min_x_param` in 
+        `params`,  before calculating the model.
     max_x_param : str
         Crop `x` (and `data`) with the function `crop_x_y()` (paramater
         `max_x`) according to the parameter with the key `max_x_param` in 
@@ -254,9 +259,11 @@ def residual(params, model_func, x, data, max_x_param=None, eps=None):
     eps : float
     """
     # Crop the X data according to a fit parameter
-    if max_x_param is not None:
-        max_x = params[max_x_param]
-        x, data = crop_x_y(x, data, max_x=max_x, include_bounds=False)
+    if min_x_param is not None or max_x_param is not None:
+        min_x = params.get(min_x_param, None)
+        max_x = params.get(max_x_param, None)
+        x, data = crop_x_y(x, data, min_x=min_x, max_x=max_x,
+                           include_bounds=False)
 
     # Calculate data according to the model function
     model = model_func(x, **params)
@@ -380,14 +387,15 @@ def fit_force_extension(e, f, bps, model_func=None, params=None, min_e=None,
     # Choose the parameters for the function residual, which calculates the
     # difference of the model function to the given data
     residual_args = model_func, e, f
+    residual_kwargs = {}
     if max_e_dyn_L0:
         # Crop e and f data variates to contour length 'L_0', i.e. up to where
         # the wlc model is valid
-        residual_args = model_func, e, f, 'L_0'
+        residual_kwargs['max_x_param'] = 'L_0'
 
     # Do the fitting:
     #   minimize -> residual(params, residual_args) -> model_func(e, params)
-    out = minimize(residual, params, args=residual_args)
+    out = minimize(residual, params, args=residual_args, kws=residual_kwargs)
 
     if verbose:
         print(fit_report(out))
