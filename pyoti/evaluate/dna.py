@@ -235,7 +235,7 @@ def crop_x_y(x, y=None, min_x=None, max_x=None, min_y=None, max_y=None,
     return x[i], y[i]
 
 
-def residual(params, model_func, x, data, crop_x_param=None, eps=None):
+def residual(params, model_func, x, data, max_x_param=None, eps=None):
     """
     Calculate the residuals of a model and given data.
 
@@ -247,16 +247,16 @@ def residual(params, model_func, x, data, crop_x_param=None, eps=None):
         a 1D numpy.ndarray of type float.
     x : 1D numpy.ndarray of type float
     data : 1D numpy.ndarray of type float
-    crop_x_param : str
-        Crop `x` and `data` according to the parameter in `params` prior to
-        the model calculation. See function `crop_x_y()`, especially the
-        paramater `max_x`.
+    max_x_param : str
+        Crop `x` (and `data`) with the function `crop_x_y()` (paramater
+        `max_x`) according to the parameter with the key `max_x_param` in 
+        `params`,  before calculating the model.
     eps : float
     """
     # Crop the X data according to a fit parameter
     max_x = None
-    if crop_x_param:
-        max_x = params[crop_x_param]
+    if max_x_param:
+        max_x = params[max_x_param]
         
     x, data = crop_x_y(x, data, max_x=max_x, include_bounds=False)
 
@@ -326,7 +326,7 @@ def get_DNA_fit_params(bps, pitch=None, L_p=None, T=None, vary=None, **kwargs):
 
 
 def fit_force_extension(e, f, bps, model_func=None, params=None, min_e=None,
-                        max_e=None, max_f=None, crop_for_wlc=True,
+                        max_e=None, max_f=None, max_e_dyn_L0=True,
                         verbose=False, **kwargs):
     """
     Fit a model function, e.g. a worm-like chain model, to force extension data
@@ -354,11 +354,11 @@ def fit_force_extension(e, f, bps, model_func=None, params=None, min_e=None,
         Maximum extension in m (defaults to +Inf) to be used to fit the data.
     max_f : float
         Maximum force in N (defaults to 15e-12) to be used to fit the data.
-    crop_for_wlc : float
-        Choose to crop the extension with the minimum of either the given
-        `max_e` value or the contour length 'L_0', which is calculated from the
-        number of basepairs `bps` and the pitch of one basepair `pitch`
-        (bps*pitch). See also the parameter function `get_DNA_fit_params`.
+    max_e_dyn_L0 : bool
+        Set `max_e` dynamically to the contour length 'L_0' for every fitting
+        evaluation. 'L_0' is calculated from the number of basepairs `bps` and
+        the pitch of one basepair (bps*pitch). See also the parameter function
+        `get_DNA_fit_params`.
     verbose : bool
         Be verbose about the fit result.
     **kwargs
@@ -378,8 +378,8 @@ def fit_force_extension(e, f, bps, model_func=None, params=None, min_e=None,
 
     # Choose the parameters for the function residual, which calculates the
     # difference of the model function to the given data
-    residual_args = model_func, e, f,
-    if crop_for_wlc:
+    residual_args = model_func, e, f
+    if max_e_dyn_L0:
         # Crop e and f data variates to contour length 'L_0', i.e. up to where
         # the wlc model is valid
         residual_args = model_func, e, f, 'L_0'
