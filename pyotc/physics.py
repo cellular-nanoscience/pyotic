@@ -108,8 +108,8 @@ def dviscosity_H2O(temp):
     c = 3.5857e-5
 
     if not(273.15 <= temp <= 373.15):
-        warnings.warn('This function is only valid within a tempearture'
-                      'range between [273.15, 373,15] Kelvin!\n'
+        warnings.warn('This function is only valid within a temperature'
+                      'range between [273.15, 373.15] Kelvin!\n'
                       'T = {0:1.3f}'.format(temp))
 
     out = -((a * (b + 2 * c * temp)) / (1 + b * temp + c * temp**2)**2)
