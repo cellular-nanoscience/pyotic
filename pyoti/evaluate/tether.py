@@ -938,7 +938,7 @@ class Tether(Evaluator):
         numpy.ndarray).
         """
         # Get force (in a fast way)
-        data = self.get_data(traces=['psdXYZ', 'positionXY'], samples=samples)
+        data = self.get_data(traces=['psdXYZ', 'positionXYZ'], samples=samples)
 
         psdXYZ = data[:, 0:3]
         positionXY = data[:, 3:5]
@@ -990,7 +990,7 @@ class Tether(Evaluator):
         psdXYZ = data[:, 0:3]
         positionXYZ = data[:, 3:6]
         positionXY = positionXYZ[:, 0:2]
-        positionZ = data[:, [3]]
+        positionZ = data[:, [5]]
 
         displacementXYZ \
             = self.calibration.displacement(psdXYZ, positionZ=positionZ)
@@ -1020,7 +1020,7 @@ class Tether(Evaluator):
         psdXYZ = data[:, 0:3]
         positionXYZ = data[:, 3:6]
         positionXY = positionXYZ[:, 0:2]
-        positionZ = data[:, [3]]
+        positionZ = data[:, [5]]
 
         displacementXYZ \
             = self.calibration.displacement(psdXYZ, positionZ=positionZ)
