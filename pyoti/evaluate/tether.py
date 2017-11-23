@@ -917,7 +917,7 @@ class Tether(Evaluator):
         """
         data = self.get_data(traces=['psdXYZ', 'positionZ'])
         psdXYZ = data[:, 0:3]
-        positionZ = data[:, [3]]
+        positionZ = data[:, [5]]
         displacementXYZ = self.calibration.displacement(psdXYZ,
                                                         positionZ=positionZ)
         return displacementXYZ
