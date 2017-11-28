@@ -67,8 +67,6 @@ from .plugins import plugin_loader
 plugin_loader.load_modules()
 
 
-import os
-
 from . import experiment as ep
 from . import evaluate as ev
 

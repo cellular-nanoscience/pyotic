@@ -795,7 +795,7 @@ class HeightFitResult(object):
     def get_params(self):
         return self.minimizer.params
 
-    @roperty
+    @property
     def params(self):
         return self.get_params()
 
