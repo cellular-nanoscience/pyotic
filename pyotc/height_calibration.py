@@ -4047,7 +4047,7 @@ class HeightCalibTime(object):
 
     @property
     def ex_psd_axis(self):
-        return self.motion.region._excited(traces=['pdsX', 'psdY'], index=False)
+        return self.motion.region._excited(traces=['psdX', 'psdY'], index=False)
 
     @property
     def ex_pos_axis(self):
