@@ -1190,6 +1190,14 @@ def distanceXYZ(positionXYZ, displacementXYZ, radius=0.0, focalshift=1.0,
     radius : float
     focalshift : float
     clip_Z : bool
+        Distances of the attachment point to the center of the bead smaller
+        than the radius are not possible. Therefore, clip the data to be at
+        least the size of the radius.
+        However, values much smaller than the radius could indicate an errornes
+        calibration with too small displacement sensitivities, which would lead
+        to too small displacements in Z and in turn to negative distances.
+        Therefore, if you want to check for this kind of error, switch off the
+        clip_Z functionality.
     """
     # distance, point of attachment of DNA
     # displacement, displacement of bead out of trap center
@@ -1199,10 +1207,22 @@ def distanceXYZ(positionXYZ, displacementXYZ, radius=0.0, focalshift=1.0,
     distanceXYZ[:, 0] -= displacementXYZ[:, 0]  # attachmentX - displacementX
     distanceXYZ[:, 1] -= displacementXYZ[:, 1]  # attachmentY - displacementY
 
-    distanceXYZ[:, 2] = (- positionXYZ[:, 2] * focalshift
-                         + radius
-                         # distanceZ + radius + displacementZ
-                         + displacementXYZ[:, 2])
+    # If the bead is free (i.e. above the surface with a distance Z > 0), a
+    # movement of the positionZ leads to a distance change reduced by the focal
+    # shift.
+    # If the bead is on the surface, a movement of the positionZ leads to a
+    # distance change independant of the focal shift.
+    idx_free = positionXYZ[:, 2] < 0
+    idx_touch = positionXYZ[:, 2] >= 0
+    distanceXYZ[idx_free, 2] = (- positionXYZ[idx_free, 2] * focalshift
+                                + radius
+                                # distanceZ + radius + displacementZ
+                                + displacementXYZ[idx_free, 2])
+    distanceXYZ[idx_touch, 2] = (- positionXYZ[idx_touch, 2]
+                                 + radius
+                                 # distanceZ + radius + displacementZ
+                                 + displacementXYZ[idx_touch, 2])
+
     if clip_Z:
         distanceXYZ[:, 2] = distanceXYZ[:, 2].clip(min=radius)
     # A positive positionZ signal (positionZ upwards) corresponds to a
