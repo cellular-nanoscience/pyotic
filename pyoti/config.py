@@ -19,6 +19,12 @@ user_config_dirs = appdirs.AppDirs('pyoti',
                                    multipath=True).user_config_dir.split(':')
 
 
+def print_dirs():
+    for dirs in [user_config_dirs, site_config_dirs, pyoti_config_dirs]:
+        for d in dirs:
+            print(d)
+
+
 def _cfg_file_paths(cfgfile):
     cfgfiles = []
     for directory in pyoti_config_dirs + site_config_dirs + user_config_dirs:
