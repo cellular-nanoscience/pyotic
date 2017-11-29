@@ -1204,7 +1204,7 @@ def distanceXYZ(positionXYZ, displacementXYZ, radius=0.0, focalshift=1.0,
                          # distanceZ + radius + displacementZ
                          + displacementXYZ[:, 2])
     if clip_Z:
-        distanceXYZ[:, 2] = distanceXYZ[:, 2].clip(min=0.0)
+        distanceXYZ[:, 2] = distanceXYZ[:, 2].clip(min=radius)
     # A positive positionZ signal (positionZ upwards) corresponds to a
     # decreasing (negative) distance of the bead to the surface:
     #   -> distanceZ ~ - positionZ
