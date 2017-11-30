@@ -76,8 +76,16 @@ def gen_filtered_data(fun, fs, T_msr, *args, **kwargs):
     of a power spectral density. After that it's
     inverse-fourier-transformed.
     The number of data points is fs * T_msr, i.e. the sampling
-    frequency times the total measurment time. *args and **kwargs are
-    passed to fun.
+    frequency times the total measurment time.
+
+    To also account for the pyhsics, one can provide the following two
+    keyword arguments:
+    mean : float
+        Set the mean of the output data.
+    std : float
+        Set the standard deviation of the output data.
+
+    All other *args and **kwargs are passed to fun(*args, **kwargs).
 
     Arguments
     ---------
@@ -87,19 +95,22 @@ def gen_filtered_data(fun, fs, T_msr, *args, **kwargs):
         Sampling frequency
     T_msr : float
         Measurement time, the total time of the measurement.
-
-    Notes
-    -----
-    Other arguments and keyword arguments are directly passed to the function.
     """
+    mean = kwargs.pop('mean') if 'mean' in kwargs else 0.0
+    std = kwargs.pop('std') if 'std' in kwargs else 1.0
+
     N = int(fs * T_msr)
 
     freq = fftfreq(N, 1/fs)
 
     xraw = randn(N)
     x = ifft(fft(xraw) * sqrt(fun(freq, *args, **kwargs))).real
+    if std != 1.0:
+        x_out = x / x.std() * std + mean
+    else:
+        x_out = x + mean
 
-    return x
+    return x_out
 
 
 def calculate_psd(x, fs, N_win=1):
