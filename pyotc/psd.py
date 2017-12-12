@@ -107,6 +107,8 @@ def gen_filtered_data(fun, fs, T_msr, *args, **kwargs):
     x = ifft(fft(xraw) * sqrt(fun(freq, *args, **kwargs))).real
     if std != 1.0:
         x_out = (x / x.std() * std)
+    else:
+        x_out = x
 
     x_out = x_out - x_out.mean() + mean
 
