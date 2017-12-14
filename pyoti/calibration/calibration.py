@@ -208,24 +208,24 @@ class Calibration(GraphMember, persistent.Persistent):
     @property
     def dsurf(self):
         """
-        Return the distance, where the bead center would be on the glass
-        surface.
+        Return the distance, where the bead center would have been on the glass
+        surface during the calibration measurement.
         """
         return self.calibsource.dsurf
 
     @property
     def psurf(self):
         """
-        Return the positionZ, were the bead center would be on the glass
-        surface.
+        Return the positionZ, were the bead center would have been on the glass
+        surface during the calibration measurement.
         """
         return - self.dsurf
 
     @property
     def touchdown(self):
         """
-        Return the positionZ, where the bead surface would touch the glass
-        surface.
+        Return the positionZ, where the bead surface would have touched the
+        glass surface during the calibration measurement.
         Uses either the corrected or specified radius of the bead determined by
         attribute `self.correct_radius`.
         """

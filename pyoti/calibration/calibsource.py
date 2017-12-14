@@ -70,8 +70,9 @@ class CalibrationSource(persistent.Persistent):
             The correction factor of the size of the bead (i.e. the relative
             stokes drag coefficient far in the solution), (1.0, default).
         dsurf : float, optional
-            The value of positionZ, where the center of the bead would be on
-            the surface (0.0, default).
+            The value of positionZ, where the center of the bead would have
+            been on the surface during the calibration measurement (0.0,
+            default).
         """
         # Set beta and kappa to generice values. The calibration factors are
         # choosen in such a way that modules relying on a calibration are still
