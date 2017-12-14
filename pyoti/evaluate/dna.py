@@ -332,7 +332,7 @@ def get_DNA_fit_params(bps, pitch=None, L_p=None, T=None, vary=None, **kwargs):
 
 def fit_force_extension(e, f, bps, model_func=None, params=None, min_e=None,
                         max_e=None, max_f=None, max_e_dyn_L0=True,
-                        verbose=False, **kwargs):
+                        verbose=False, return_model_func=False, **kwargs):
     """
     Fit a model function, e.g. a worm-like chain model, to force extension data
     of DNA.
@@ -369,8 +369,17 @@ def fit_force_extension(e, f, bps, model_func=None, params=None, min_e=None,
         `max_e` will be used, instead.
     verbose : bool
         Be verbose about the fit result.
+    return_model_func : bool
+        Return the used model_func additionally to the fit result.
     **kwargs
         Arguments passed to the parameter function `get_DNA_fit_params`.
+
+    Returns
+    -------
+    lmfit.minimizer.MinimizerResult
+        If `return_model_func` is False.
+    (lmfit.minimizer.MinimizerResult, model_func)
+        If `return_model_func` is True
     """
     # Choose the model function and initialize the fit parameters
     model_func = model_func or worm_like_chain
@@ -403,4 +412,7 @@ def fit_force_extension(e, f, bps, model_func=None, params=None, min_e=None,
         print('    Number of base-pairs: {:.0f}'.format(
                             np.round(out.params['L_0'] / params['L_0'] * bps)))
 
-    return out
+    if return_model_func:
+        return out, model_func
+    else:
+        return out

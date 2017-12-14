@@ -1185,14 +1185,14 @@ def distanceXYZ(positionXYZ, displacementXYZ, radius=0.0, focalshift=1.0,
 
     Parameters
     ----------
-    positionXYZ : np.array
-    displacementXYZ : np.array
+    positionXYZ : 2D np.array of type float
+    displacementXYZ : 2D np.array of type float
     radius : float
     focalshift : float
     clip_Z : bool
-        Distances of the attachment point to the center of the bead smaller
-        than the radius are not possible. Therefore, clip the data to be at
-        least the size of the radius.
+        The distance of the attachment point to the center of the bead cannot
+        be smaller than the radius. Therefore, clip the data to be at least as
+        great as the radius.
         However, values much smaller than the radius could indicate an errornes
         calibration with too small displacement sensitivities, which would lead
         to too small displacements in Z and in turn to negative distances.
@@ -1204,8 +1204,8 @@ def distanceXYZ(positionXYZ, displacementXYZ, radius=0.0, focalshift=1.0,
     # radius
     distanceXYZ = positionXYZ.copy()
     # distance from attachment point to center of bead
-    distanceXYZ[:, 0] -= displacementXYZ[:, 0]  # attachmentX - displacementX
-    distanceXYZ[:, 1] -= displacementXYZ[:, 1]  # attachmentY - displacementY
+    # attachmentXY - displacementXY
+    distanceXYZ[:, 0:2] -= displacementXYZ[:, 0:2]
 
     # If the bead is free (i.e. above the surface with a distance Z > 0), a
     # movement of the positionZ leads to a distance change reduced by the focal
