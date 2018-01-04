@@ -30,36 +30,42 @@ def version():
     """
     return __version__
 
-from IPython import get_ipython
-import ipykernel
 
-# Switch off warnings
-# warnings.filterwarnings('ignore')
+import sys
+if 'IPython' in sys.modules:
+    try:
+        import ipympl
+    except ImportError:
+        from IPython import get_ipython
+        import ipykernel
 
-# Load matplotlib and set backend:
-ip = get_ipython()
-if (hasattr(ipykernel, 'zmqshell')
-   and isinstance(ip, ipykernel.zmqshell.ZMQInteractiveShell)):
-    import matplotlib
-    matplotlib.use('nbAgg')
-    # matplotlib.use('gtkAgg')
-    # import matplotlib.pyplot as plt
+        # Switch off warnings
+        # warnings.filterwarnings('ignore')
 
-    # ip.enable
-    # default to inline in kernel environments
-    # if hasattr(ip, 'kernel'):
-    #     print('enabling inline matplotlib')
-    #     ip.enable_matplotlib('inline')
-    # else:
-    #     print('enabling matplotlib')
-    #     ip.enable_matplotlib()
+        # Load matplotlib and set backend:
+        ip = get_ipython()
+        if (hasattr(ipykernel, 'zmqshell')
+           and isinstance(ip, ipykernel.zmqshell.ZMQInteractiveShell)):
+            import matplotlib
+            matplotlib.use('nbAgg')
+            # matplotlib.use('gtkAgg')
+            # import matplotlib.pyplot as plt
 
-    # Set format for inline plots
-    # from IPython.display import display
-    # from IPython.core.pylabtools import figsize, getfigs
-    from IPython.display import set_matplotlib_formats
-    # %config InlineBackend.figure_formats = ['png']
-    set_matplotlib_formats('png', 'svg', 'pdf', 'jpeg', quality=90)
+            # ip.enable
+            # default to inline in kernel environments
+            # if hasattr(ip, 'kernel'):
+            #     print('enabling inline matplotlib')
+            #     ip.enable_matplotlib('inline')
+            # else:
+            #     print('enabling matplotlib')
+            #     ip.enable_matplotlib()
+
+# Set format for inline plots
+# from IPython.display import display
+# from IPython.core.pylabtools import figsize, getfigs
+from IPython.display import set_matplotlib_formats
+# %config InlineBackend.figure_formats = ['png']
+set_matplotlib_formats('png', 'svg', 'pdf', 'jpeg', quality=90)
 
 
 # Load pyoti plugins
