@@ -60,12 +60,12 @@ if 'IPython' in sys.modules:
             #     print('enabling matplotlib')
             #     ip.enable_matplotlib()
 
-# Set format for inline plots
-# from IPython.display import display
-# from IPython.core.pylabtools import figsize, getfigs
-from IPython.display import set_matplotlib_formats
-# %config InlineBackend.figure_formats = ['png']
-set_matplotlib_formats('png', 'svg', 'pdf', 'jpeg', quality=90)
+    # Set format for inline plots
+    # from IPython.display import display
+    # from IPython.core.pylabtools import figsize, getfigs
+    from IPython.display import set_matplotlib_formats
+    # %config InlineBackend.figure_formats = ['png']
+    set_matplotlib_formats('png', 'svg', 'pdf', 'jpeg', quality=90)
 
 
 # Load pyoti plugins
