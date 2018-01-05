@@ -34,23 +34,17 @@ def version():
 import sys
 if 'IPython' in sys.modules:
     try:
+        # Try to use ipympl backend (module://ipympl.backend_nbagg)
         import ipympl
     except ImportError:
-        from IPython import get_ipython
-        import ipykernel
+        try:
+            ip = get_ipython()
 
-        # Switch off warnings
-        # warnings.filterwarnings('ignore')
-
-        # Load matplotlib and set backend:
-        ip = get_ipython()
-        if (hasattr(ipykernel, 'zmqshell')
-           and isinstance(ip, ipykernel.zmqshell.ZMQInteractiveShell)):
+            # Import matplotlib and set backend:
             import matplotlib
             matplotlib.use('nbAgg')
-            # matplotlib.use('gtkAgg')
-            # import matplotlib.pyplot as plt
-
+        except:
+            pass
             # ip.enable
             # default to inline in kernel environments
             # if hasattr(ip, 'kernel'):
@@ -61,8 +55,6 @@ if 'IPython' in sys.modules:
             #     ip.enable_matplotlib()
 
     # Set format for inline plots
-    # from IPython.display import display
-    # from IPython.core.pylabtools import figsize, getfigs
     from IPython.display import set_matplotlib_formats
     # %config InlineBackend.figure_formats = ['png']
     set_matplotlib_formats('png', 'svg', 'pdf', 'jpeg', quality=90)
