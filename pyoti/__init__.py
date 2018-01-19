@@ -34,8 +34,13 @@ def version():
 import sys
 if 'IPython' in sys.modules:
     try:
-        # Try to use ipympl backend (module://ipympl.backend_nbagg)
-        import ipympl
+        # Check if notebook runs in JupyterLab environment and not the
+        # classical notebook
+        if 'zmq.utils.garbage' in sys.modules:
+            # Try to use ipympl backend (module://ipympl.backend_nbagg)
+            import ipympl
+        else:
+            raise ImportError('Notebook does not run in JupyterLab.')
     except ImportError:
         try:
             ip = get_ipython()
@@ -58,7 +63,6 @@ if 'IPython' in sys.modules:
     from IPython.display import set_matplotlib_formats
     # %config InlineBackend.figure_formats = ['png']
     set_matplotlib_formats('png', 'svg', 'pdf', 'jpeg', quality=90)
-
 
 # Load pyoti plugins
 from .plugins import plugin_loader
