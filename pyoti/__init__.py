@@ -36,6 +36,7 @@ if 'IPython' in sys.modules:
     try:
         # Check if notebook runs in JupyterLab environment and not the
         # classical notebook
+        # TODO: needs to be fixed!
         if 'zmq.utils.garbage' in sys.modules:
             # Try to use ipympl backend (module://ipympl.backend_nbagg)
             import ipympl
