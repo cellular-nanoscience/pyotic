@@ -30,37 +30,40 @@ def version():
     """
     return __version__
 
-from IPython import get_ipython
-import ipykernel
 
-# Switch off warnings
-# warnings.filterwarnings('ignore')
+import sys
+if 'IPython' in sys.modules:
+    try:
+        # Check if notebook runs in JupyterLab environment and not the
+        # classical notebook
+        # TODO: needs to be fixed!
+        if False:
+            # Try to use ipympl backend (module://ipympl.backend_nbagg)
+            import ipympl
+        else:
+            raise ImportError('Notebook does not run in JupyterLab.')
+    except ImportError:
+        try:
+            ip = get_ipython()
 
-# Load matplotlib and set backend:
-ip = get_ipython()
-if (hasattr(ipykernel, 'zmqshell')
-   and isinstance(ip, ipykernel.zmqshell.ZMQInteractiveShell)):
-    import matplotlib
-    matplotlib.use('nbAgg')
-    # matplotlib.use('gtkAgg')
-    # import matplotlib.pyplot as plt
-
-    # ip.enable
-    # default to inline in kernel environments
-    # if hasattr(ip, 'kernel'):
-    #     print('enabling inline matplotlib')
-    #     ip.enable_matplotlib('inline')
-    # else:
-    #     print('enabling matplotlib')
-    #     ip.enable_matplotlib()
+            # Import matplotlib and set backend:
+            import matplotlib
+            matplotlib.use('nbAgg')
+        except:
+            pass
+            # ip.enable
+            # default to inline in kernel environments
+            # if hasattr(ip, 'kernel'):
+            #     print('enabling inline matplotlib')
+            #     ip.enable_matplotlib('inline')
+            # else:
+            #     print('enabling matplotlib')
+            #     ip.enable_matplotlib()
 
     # Set format for inline plots
-    # from IPython.display import display
-    # from IPython.core.pylabtools import figsize, getfigs
     from IPython.display import set_matplotlib_formats
     # %config InlineBackend.figure_formats = ['png']
     set_matplotlib_formats('png', 'svg', 'pdf', 'jpeg', quality=90)
-
 
 # Load pyoti plugins
 from .plugins import plugin_loader

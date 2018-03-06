@@ -7,7 +7,6 @@ Created on Wed Mar  9 17:09:09 2016
 import hashlib
 import inspect
 import numpy as np
-import os
 
 from .. import config as cf
 from .. import traces as tc

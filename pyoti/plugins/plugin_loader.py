@@ -22,6 +22,13 @@ user_plugins_dirs = [os.path.join(directory, 'plugins') for directory in
 plugins_kinds = ['datasources', 'modifications', 'calibsources']
 
 
+def print_dirs():
+    for kind in plugins_kinds:
+        for dirs in [user_plugins_dirs, site_plugins_dirs, pyoti_plugins_dirs]:
+            for d in dirs:
+                print(os.path.join(d, kind))
+
+
 def load_module(module_path, module_name):
     # Load module from source file [1], [2], and [3].
     # Set the __name__ attribute of the module and the __module__ attribute of

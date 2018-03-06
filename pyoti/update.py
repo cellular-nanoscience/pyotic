@@ -533,21 +533,6 @@ def _update_db(experiment, old_version, new_version):
                         widget.description = widget.description.replace(
                             "used ", "")
 
-        # Update to 0.10.1
-        if old_version < comp('0.10.1'):
-            # Rename CNMSource to CNMatlabSource
-            # pyoti.calibration.calibsources.cnmatlab.CNMSource ->
-            # pyoti.calibration.calibsources.cellnano.CNMatlabSource
-            for record in experiment.records():
-                old_calibsource = record.calibration.calibsource
-                old_class_name = old_calibsource.__class__.__name__
-                if old_class_name == 'CNMSource':
-                    change_object_module(
-                        old_calibsource,
-                        old='pyoti.calibration.calibsources.cnmatlab',
-                        new='pyoti.calibration.calibsources.cellnano',
-                        new_class_name='CNMatlabSource')
-
         # Update to 0.11.0
         if old_version < comp('0.11.0'):
             # Map old modules to new module names (new modules have already
@@ -578,6 +563,24 @@ def _update_db(experiment, old_version, new_version):
                         'pyoti.plugins.calibsources.pyotic']
             for old, new in zip(old_mods, new_mods):
                 sys.modules[old] = sys.modules[new]
+
+        # Update to 0.10.1
+        if old_version < comp('0.10.1'):
+            # Rename CNMSource to CNMatlabSource
+            # pyoti.calibration.calibsources.cnmatlab.CNMSource ->
+            # pyoti.calibration.calibsources.cellnano.CNMatlabSource
+            for record in experiment.records():
+                old_calibsource = record.calibration.calibsource
+                old_class_name = old_calibsource.__class__.__name__
+                if old_class_name == 'CNMSource':
+                    change_object_module(
+                        old_calibsource,
+                        old='pyoti.calibration.calibsources.cnmatlab',
+                        new='pyoti.calibration.calibsources.cellnano',
+                        new_class_name='CNMatlabSource')
+
+        # Update to 0.11.0
+        if old_version < comp('0.11.0'):
             # To update the __module__ attribute of objects, one must
             # trigger a change of objects directly referencing the objects,
             # whose __module__ has changed, not the objects themselves. This is
