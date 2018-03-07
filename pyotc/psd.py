@@ -1844,16 +1844,16 @@ def gen_psdm_from_region(region, T_msr, N_avg,
 
         ## !!! important this is already in µm, due to the setup-specific
         ## config file
-        ex_amp = float(sqrt(2 * p.psd[p.freq == ex_freq] * p.df))
-        ex_amp_err = float(sqrt(2 * p.psd_err[p.freq == ex_freq] * p.df))
+        ex_amp = (sqrt(2 * p.psd[p.freq == ex_freq] * p.df)).astype(float)
+        ex_amp_err = (sqrt(2 * p.psd_err[p.freq == ex_freq] * p.df)).astype(float)
 
         psd_ex_axis = psd_traces[ex_axis]
 
         freqs = pm.get_freq(psd_ex_axis)
-        ex_pow = float(pm.get_psd(psd_ex_axis)[freqs == ex_freq] *
-                       pm.psds[psd_ex_axis].df)
-        ex_pow_err = float(pm.get_psd_err(psd_ex_axis)[freqs == ex_freq] *
-                           pm.psds[psd_ex_axis].df)
+        ex_pow = (pm.get_psd(psd_ex_axis)[freqs == ex_freq] *
+                  pm.psds[psd_ex_axis].df).astype(float)
+        ex_pow_err = (pm.get_psd_err(psd_ex_axis)[freqs == ex_freq] *
+                      pm.psds[psd_ex_axis].df).astype(float)
 
         pm.set_ac_params(psd_ex_axis, ex_freq, ex_amp, ex_pow,
                          ex_amplitude_err=ex_amp_err, ex_power_err=ex_pow_err,
