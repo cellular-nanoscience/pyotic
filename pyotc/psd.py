@@ -1259,19 +1259,19 @@ class PSDMeasurement(object):
             conv = ureg(freq_unit).to(self._freq_unit).magnitude
         else:
             conv = 1.0
-        self.ex_freq = ex_freq * conv
+        self.ex_freq = float(ex_freq) * conv
 
         r_unit = self.exp_setting._radius_unit
         if amplitude_unit != r_unit:
             conv = ureg(amplitude_unit).to(r_unit).magnitude
         else:
             conv = 1.0
-        self.ex_amplitude = ex_amplitude * conv
-        self.ex_amplitude_err = ex_amplitude_err * conv
+        self.ex_amplitude = float(ex_amplitude) * conv
+        self.ex_amplitude_err = float(ex_amplitude_err) * conv
         self._ex_amplitude_unit = r_unit
 
-        self.ex_power = ex_power
-        self.ex_power_err = ex_power_err
+        self.ex_power = float(ex_power)
+        self.ex_power_err = float(ex_power_err)
         self._ex_power_unit = power_unit
 
         self.active_calibration = True
@@ -1613,7 +1613,7 @@ class PSDMeasurement(object):
             f_sample_ = [f_sample_[0] for name in names]
         f_sample = {}
         for name, fs in zip(names, f_sample_):
-            f_sample[name] = fs
+            f_sample[name] = float(fs)
 
         # check if radius or diameter was specified
         if co.radius not in params:
@@ -1844,16 +1844,16 @@ def gen_psdm_from_region(region, T_msr, N_avg,
 
         ## !!! important this is already in µm, due to the setup-specific
         ## config file
-        ex_amp = (sqrt(2 * p.psd[p.freq == ex_freq] * p.df))[0]
-        ex_amp_err = (sqrt(2 * p.psd_err[p.freq == ex_freq] * p.df))[0]
+        ex_amp = float(sqrt(2 * p.psd[p.freq == ex_freq] * p.df))
+        ex_amp_err = float(sqrt(2 * p.psd_err[p.freq == ex_freq] * p.df))
 
         psd_ex_axis = psd_traces[ex_axis]
 
         freqs = pm.get_freq(psd_ex_axis)
-        ex_pow = (pm.get_psd(psd_ex_axis)[freqs == ex_freq] *
-                  pm.psds[psd_ex_axis].df)[0]
-        ex_pow_err = (pm.get_psd_err(psd_ex_axis)[freqs == ex_freq] *
-                      pm.psds[psd_ex_axis].df)[0]
+        ex_pow = float(pm.get_psd(psd_ex_axis)[freqs == ex_freq] *
+                       pm.psds[psd_ex_axis].df)
+        ex_pow_err = float(pm.get_psd_err(psd_ex_axis)[freqs == ex_freq] *
+                           pm.psds[psd_ex_axis].df)
 
         pm.set_ac_params(psd_ex_axis, ex_freq, ex_amp, ex_pow,
                          ex_amplitude_err=ex_amp_err, ex_power_err=ex_pow_err,
