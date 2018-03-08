@@ -1613,7 +1613,7 @@ class PSDMeasurement(object):
             f_sample_ = [f_sample_[0] for name in names]
         f_sample = {}
         for name, fs in zip(names, f_sample_):
-            f_sample[name] = float(fs)
+            f_sample[name] = fs
 
         # check if radius or diameter was specified
         if co.radius not in params:
