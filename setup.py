@@ -51,7 +51,7 @@ if not abort:
     setup(name='pyotic',
           version=__version__,
           author='Tobias Jachowski and Steve Simmert',
-          author_email='pyotic@jachowski.de, steve.simmert@uni-tuebingen.de',
+          author_email='steve.simmert@uni-tuebingen.de',
           url='https://github.com/cellular-nanoscience/pyotic',
           license=license,
           description="Time-dependent signal analysis and calibration of optical tweezers.",
