@@ -290,7 +290,7 @@ def fit_psd(freq,
 
     modelfit = model_obj.fit(1/psd_data, freq=freq,
                              params=pars, weights=weights,
-                             fit_kws={'nan_policy': 'propagate'})
+                             nan_policy='propagate')
     if verbose:
         report_fit(modelfit)
 
