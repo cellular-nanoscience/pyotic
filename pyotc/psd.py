@@ -150,7 +150,7 @@ def calculate_psd(x, fs, N_win=1):
                                  nperseg=len_,
                                  noverlap=0,
                                  nfft=None,
-                                 detrend='constant',
+                                 detrend=None,
                                  return_onesided=True,
                                  scaling='density',
                                  axis=-1)
@@ -1937,14 +1937,20 @@ def hydro_psd(freq,  # Hz
     viscosity : float
         Viscosity of the medium in Ns/m². If None, the viscosity of water at
         temperature temp is assumed.
+    lateral : bool
+        deprecated.
+    verbose : bool
+        be verbose.
 
     References
     ----------
-    Appendix D in:
+    [1] Appendix D in:
         Tolić-Nørrelykke et al. (2006)
         Calibration of optical tweezers with positional detection in the back
         focal plane. Review of Scientific Instruments, 77(10), 103101.
-        http://doi.org/10.1063/1.2356852
+    [2] Berg-Sørensen, K., & Flyvbjerg, H. (2005). The colour of thermal noise
+        in classical Brownian motion: A feasibility study of direct
+        experimental observation. New Journal of Physics, 7.
 
     See Also
     --------
@@ -1953,22 +1959,31 @@ def hydro_psd(freq,  # Hz
     """
     drag_stokes = drag(radius, temp, density=density_med,
                        viscosity=viscosity)
-
     f_c0 = f_c
-
     drag_l = drag(radius, temp, freq=freq, height=height, density=density_med,
                   viscosity=viscosity, lateral=lateral, verbose=verbose)
-
     rel_drag = drag_l / drag_stokes
 
-    # f_m0 = drag(radius) / (2 * pi * m)
-    # f_m0 = drag(radius) / (2 * pi * rho * (4/3) * pi * radius**3)
-    f_m0 = drag_stokes / ((8 / 3) * pi**2 * rho * radius**3)
+    # see Ref. [2]
+    # f_m0 = drag(radius) / (2 * pi * m*)
+    # m* = m_p + 2/3*pi*R³*rho_fluid
+    m_p = 4/3 * pi * radius**3 * rho
+    f_m0 = drag_stokes / (2 * pi (m_p + 2/3 * pi * radius**3 * density_med))
 
     P = (D * rel_drag.real /
          (pi**2 * ((f_c0 + freq * rel_drag.imag - freq**2 / f_m0)**2 +
                    (freq * rel_drag.real)**2)))
 
+    if verbose:
+        print('hydro_psd:')
+        print('Stokes drag (Ns/m) = {:1.4e}'.format(drag_stokes))
+        print('f_c (Hz) = {:1.4e}'.format(f_c0))
+        print('corrected drag (Faxen) (Ns/m)  = {:1.4e}'.format(drag_l))
+        print('relative drage  = {:1.4e}'.format(rel_drag))
+        print('mass sphere (kg) = {:1.4e}'.format(m_p))
+        print('f_m0 (Hz) = {:1.4e}'.format(f_m0))
+        print('P (arb²/Hz)  = {:1.4e}'.format(P))
+        
     return P.real
 
 

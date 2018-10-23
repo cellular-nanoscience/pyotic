@@ -4047,10 +4047,12 @@ class HeightCalibTime(object):
 
     @property
     def ex_psd_axis(self):
-        return self.motion.region._excited(traces=['psdX', 'psdY'], index=False)
+        """ Get the name of the excited psd signal. """
+        return self.traces[self.motion.region._excited(index=True)]
 
     @property
     def ex_pos_axis(self):
+        """ Get the name of the excited stage axis. """
         return self.motion.region._excited(index=False)
 
     @property
