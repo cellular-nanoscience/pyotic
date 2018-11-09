@@ -1,4 +1,7 @@
 * Release notes
+** version 0.12.3
+ - bug fix in pyotc/psd.py
+   where a * was missing
 ** version 0.12.2
  - fixed bug in hydrodynamic correct PSD calculation of resonance
    frequency
@@ -6,6 +9,9 @@
    to "constant" in when calling scipy's welch algorithm. now it's set
    to None to calculate the offset value correctly
  - minor changes in doc-strings
+** version 0.12.1
+ - fixed bug #4 - nan_policy error
+
 ** version 0.12.1
  - fixed bug #4 - nan_policy error
 
