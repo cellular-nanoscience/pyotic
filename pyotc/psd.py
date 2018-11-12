@@ -1968,7 +1968,7 @@ def hydro_psd(freq,  # Hz
     # f_m0 = drag(radius) / (2 * pi * m*)
     # m* = m_p + 2/3*pi*R³*rho_fluid
     m_p = 4/3 * pi * radius**3 * rho
-    f_m0 = drag_stokes / (2 * pi (m_p + 2/3 * pi * radius**3 * density_med))
+    f_m0 = drag_stokes / (2 * pi * (m_p + 2/3 * pi * radius**3 * density_med))
 
     P = (D * rel_drag.real /
          (pi**2 * ((f_c0 + freq * rel_drag.imag - freq**2 / f_m0)**2 +
