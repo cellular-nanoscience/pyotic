@@ -1,4 +1,6 @@
 * Release notes
+** version 0.12.5
+ - fixes psd fitting bug where lmfit result returns None as stderr (issue #6).
 ** version 0.12.4
  - bug fix in pyotc/psd.py
    where a * was missing
