@@ -1,4 +1,6 @@
 * Release notes
+** version 0.12.6
+ - fixes syntax error that appeared in 0.12.5
 ** version 0.12.5
  - fixes psd fitting bug where lmfit result returns None as stderr (issue #6).
 ** version 0.12.4
