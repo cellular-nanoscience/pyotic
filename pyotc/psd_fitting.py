@@ -33,6 +33,8 @@ from lmfit import report_fit
 
 import matplotlib.pyplot as plt
 
+from numpy import nan
+
 from os.path import join, isfile
 
 from scipy import array
@@ -1244,10 +1246,10 @@ class PSDFit(object):
 
             FR = FitResult(name=name,
                            D=D * debias,
-                           D_err=None,
+                           D_err=nan,
                            D_unit='V**2/s',
                            f_c=f_c,
-                           f_c_err=None,
+                           f_c_err=nan,
                            freq=freq_keep,
                            freq_unit='Hz',
                            eval=lf_eval,
@@ -1397,9 +1399,9 @@ class PSDFit(object):
 
             fres = FitResult(name=name + ' (cltv)',
                              D=params['D_' + name].value,
-                             D_err=params['D_' + name].stderr,
+                             D_err=params['D_' + name].stderr if params['D_' + name].stderr is not None else nan,
                              f_c=params['f_c_' + name].value,
-                             f_c_err=params['f_c_' + name].stderr,
+                             f_c_err=params['f_c_' + name].stderr if params['f_c_' + name].stderr is not None else nan,
                              freq=freq,
                              eval=mod_,
                              residuals=res_,
@@ -1685,10 +1687,10 @@ class PSDFit(object):
         params = modelfit.params
         FR = FitResult(name=name,
                        D=params['D'].value * deb,
-                       D_err=params['D'].stderr * deb,
+                       D_err=params['D'].stderr * deb if params['D'].stderr is not None else nan,
                        D_unit='V**2/s',
                        f_c=params['f_c'].value,
-                       f_c_err=params['f_c'].stderr,
+                       f_c_err=params['f_c'].stderr if params['f_c'].stderr is not None else nan,
                        freq=freq,
                        freq_unit='Hz',
                        eval=1 / modelfit.eval() * deb,
