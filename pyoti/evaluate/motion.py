@@ -137,7 +137,6 @@ class Motion(Evaluator):
         ax = figure.gca()
 
         ax.grid(True)
-        ax.hold(True)
 
         # Get t, positionZ, psdXYZ and detected plateaus
         t = self.timevector
