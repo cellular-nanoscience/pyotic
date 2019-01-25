@@ -32,20 +32,23 @@ def version():
 
 
 import sys
-if 'IPython' in sys.modules:
-    import matplotlib
-    try:
-        # Try to use ipympl backend (module://ipympl.backend_nbagg)
-        import ipympl
-    except ImportError:
-        try:
-            ip = get_ipython()
 
-            # Set fallback backend backend:
-            matplotlib.use('nbAgg')
-        except:
+try:
+    # Try to import matplotlib plotting library
+    import matplotlib
+except ImportError:
+    pass
+
+if 'IPython' in sys.modules:
+    # We are in an ipython/juypter environment
+    ip = get_ipython()
+    if 'ZMQInteractiveShell' in repr(ip):
+        # We are in a notebook or jupyter lab,
+        # try to use ipympl backend (module://ipympl.backend_nbagg)
+        try:
+            import ipympl
+        except ImportError:
             pass
-            # ip.enable
             # default to inline in kernel environments
             # if hasattr(ip, 'kernel'):
             #     print('enabling inline matplotlib')
