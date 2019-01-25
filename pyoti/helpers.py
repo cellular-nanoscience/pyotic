@@ -170,10 +170,13 @@ def movingmedian(data, window, mode='reflect', cval=0.0, origin=0):
 
 def moving_mean(data, window):
     """
-    Calculate a filtered signal by using a moving mean.
+    Calculate a filtered signal by using a moving mean. The first datapoint is
+    the mean of the first `window` datapoints and the last datapoint is the mean
+    of the last `window` datapoints of the original data. This function does not
+    handle the lost edges of the data, i.e. the filtered data is shortened by
+    `window` datapoints.
 
-    This function is faster than the function `movingmean()`, but does not
-    handle the lost edges of the data.
+    This function is faster than the function `movingmean()`.
 
     Parameters
     ----------
