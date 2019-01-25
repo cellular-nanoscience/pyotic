@@ -33,21 +33,15 @@ def version():
 
 import sys
 if 'IPython' in sys.modules:
+    import matplotlib
     try:
-        # Check if notebook runs in JupyterLab environment and not the
-        # classical notebook
-        # TODO: needs to be fixed!
-        if False:
-            # Try to use ipympl backend (module://ipympl.backend_nbagg)
-            import ipympl
-        else:
-            raise ImportError('Notebook does not run in JupyterLab.')
+        # Try to use ipympl backend (module://ipympl.backend_nbagg)
+        import ipympl
     except ImportError:
         try:
             ip = get_ipython()
 
-            # Import matplotlib and set backend:
-            import matplotlib
+            # Set fallback backend backend:
             matplotlib.use('nbAgg')
         except:
             pass
