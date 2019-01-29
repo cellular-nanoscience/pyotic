@@ -331,7 +331,7 @@ def get_DNA_fit_params(bps, pitch=None, L_p=None, T=None, vary=None, **kwargs):
 
 
 def fit_force_extension(e, f, bps, model_func=None, params=None, min_e=None,
-                        max_e=None, max_f=None, max_e_dyn_L0=True,
+                        max_e=None, max_f=None, max_e_dyn_L0=False,
                         verbose=False, return_model_func=False, **kwargs):
     """
     Fit a model function, e.g. a worm-like chain model, to force extension data
