@@ -33,12 +33,6 @@ def version():
 
 import sys
 
-try:
-    # Try to import matplotlib plotting library
-    import matplotlib
-except ImportError:
-    pass
-
 if 'IPython' in sys.modules:
     # We are in an ipython/juypter environment
     ip = get_ipython()
