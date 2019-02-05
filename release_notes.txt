@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.12.9
+ - Remove unecessary matplotlib import upon import of pyoti
 ** Version 0.12.8
  - fix error "The array returned by a function changed size between calls" in function dna.fit_force_extension() by changing default value of max_e_dyn_L0=False, when using scipy>=1.1.0
 ** Version 0.12.7
