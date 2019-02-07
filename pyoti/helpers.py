@@ -251,6 +251,66 @@ def calculate_means(data, samples=None, stds=False):
     return means
 
 
+def bin_means(data, number_of_bins=None, datapoints_per_bin=None,
+              sortcolumn=0):
+    """
+    Calculates binned means.
+
+    Parameters
+    ----------
+    data : 2D numpy.ndarray of type float
+    number_of_bins : int, optional
+        Number of bins the datapoints should be averaged with. Defaults to
+        sqrt(len(data)), if datapoints_per_bin is None.
+    datapoints_per_bin : int, optional
+        Average number of datapoints to be averaged in one bin.
+    sortcolumn : int, optional
+        Column of `data` that acts as sorting index upon binning for the rest
+        of the data. Defaults to the first column (`data[:,0])`.
+
+    Returns
+    -------
+    2D numpy.ndarray of type float
+        The averaged bin values.
+    1D numpy.ndarray of type float
+        The center of the bins
+    float
+        The width of the bins.
+    """
+    # Calculate number of bins
+    if number_of_bins is None:
+        if datapoints_per_bin is None:
+            number_of_bins = round(np.sqrt(len(data)))
+        else:
+            number_of_bins = max(1, round(len(data) / datapoints_per_bin))
+    number_of_bins = int(number_of_bins)
+
+    # Create the bins based on data[:, sortcolumn]
+    minimum = data[:, sortcolumn].min()
+    maximum = data[:, sortcolumn].max()
+    bin_edges = np.linspace(minimum, maximum, number_of_bins + 1)
+    bin_width = bin_edges[1] - bin_edges[0]
+    bin_centers = bin_edges[0:-1] + bin_width / 2
+
+    # Get the indices of the bins to which each value in input array belongs.
+    bin_idx = np.digitize(data[:, sortcolumn], bin_edges)
+
+    nans = np.full(data.shape[1], np.nan)
+    # Calculate the means of the data in the bins
+    bin_means = np.array([data[bin_idx == i].mean(axis=0)
+                          if np.any(bin_idx == i)
+                          else nans
+                          for i in range(1, len(bin_edges))])
+    bin_Ns = np.array([np.sum(bin_idx == i)
+                       for i in range(1, len(bin_edges))])
+    bin_stds = np.array([data[bin_idx == i].std(axis=0)
+                         if np.any(bin_idx == i)
+                         else nans
+                         for i in range(1, len(bin_edges))])
+
+    return bin_centers, bin_means, bin_stds, bin_Ns, bin_width
+
+
 def file_and_dir(filename=None, directory=None):
     filename = filename or ""
     fdir = os.path.dirname(filename)
