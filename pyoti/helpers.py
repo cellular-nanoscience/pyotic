@@ -245,7 +245,7 @@ def calculate_means(data, samples=None, stds=False):
     means = np.array([data[s].mean(axis=0) for s in samples], ndmin=2)
 
     if stds:
-        stds = np.array([data[s].std(axis=0) for s in samples], ndmin=2)
+        stds = np.array([data[s].std(axis=0, ddof=1) for s in samples], ndmin=2)
         return means, stds
 
     return means
@@ -254,7 +254,7 @@ def calculate_means(data, samples=None, stds=False):
 def bin_means(data, number_of_bins=None, datapoints_per_bin=None,
               sortcolumn=0):
     """
-    Calculates binned means.
+    Calculate binned means.
 
     Parameters
     ----------
@@ -303,7 +303,7 @@ def bin_means(data, number_of_bins=None, datapoints_per_bin=None,
                           for i in range(1, len(bin_edges))])
     bin_Ns = np.array([np.sum(bin_idx == i)
                        for i in range(1, len(bin_edges))])
-    bin_stds = np.array([data[bin_idx == i].std(axis=0)
+    bin_stds = np.array([data[bin_idx == i].std(axis=0, ddof=1)
                          if np.any(bin_idx == i)
                          else nans
                          for i in range(1, len(bin_edges))])

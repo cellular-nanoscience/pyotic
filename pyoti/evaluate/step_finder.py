@@ -155,10 +155,10 @@ def cap_data(data, cap_length, inspect_length):
     """
     median_start, std_start = \
         np.median(data[:int(inspect_length) + 1]), \
-        np.std(data[:int(inspect_length) + 1])
+        np.std(data[:int(inspect_length) + 1], ddof=1)
     median_stop, std_stop = \
         np.median(data[-int(inspect_length):]), \
-        np.std(data[-int(inspect_length):])
+        np.std(data[-int(inspect_length):], ddof=1)
     noise_start = \
         np.random.normal(loc=median_start, scale=std_start, size=cap_length)
     noise_stop = \
@@ -311,7 +311,7 @@ def filter_fbnl(data, resolution, window, window_var=None, p=None,
     sm_outls = sm[outls]
     sm_noise = sm[~outls]
 
-    step_mass_STD = sm_noise.std()  # STD noise
+    step_mass_STD = sm_noise.std(ddof=1)  # STD noise
 
     if np.sum(outls) > 0:
         step_mass_SNR = sm_outls / step_mass_STD
