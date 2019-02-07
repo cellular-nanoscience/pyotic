@@ -295,17 +295,12 @@ def bin_means(data, number_of_bins=None, datapoints_per_bin=None,
     # Get the indices of the bins to which each value in input array belongs.
     bin_idx = np.digitize(data[:, sortcolumn], bin_edges)
 
-    nans = np.full(data.shape[1], np.nan)
     # Calculate the means of the data in the bins
     bin_means = np.array([data[bin_idx == i].mean(axis=0)
-                          if np.any(bin_idx == i)
-                          else nans
                           for i in range(1, len(bin_edges))])
     bin_Ns = np.array([np.sum(bin_idx == i)
                        for i in range(1, len(bin_edges))])
     bin_stds = np.array([data[bin_idx == i].std(axis=0, ddof=1)
-                         if np.any(bin_idx == i)
-                         else nans
                          for i in range(1, len(bin_edges))])
 
     return bin_centers, bin_means, bin_stds, bin_Ns, bin_width
