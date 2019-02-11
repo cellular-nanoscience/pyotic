@@ -1,6 +1,8 @@
 * Release notes
 ** Version 0.12.10
  - Improve read_labview_bin_data()
+** Version 0.12.10
+ - Improve read_labview_bin_data()
 ** Version 0.12.9
  - Remove unecessary matplotlib import upon import of pyoti
 ** Version 0.12.8
