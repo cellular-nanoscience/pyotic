@@ -71,14 +71,14 @@ class Tether(Evaluator):
         stresses
         releases
         """
-
+        sf_class = CycleSectioner
         traces_sf = kwargs.pop('traces_sf', 'positionXY')
 
         # resolution for (almost) all properties, e.g. displacement, force, ...
         # resolution 1.000 Hz, samplingrate 40.000 Hz -> 40 points
         super().__init__(region=region, calibration=calibration,
                          resolution=resolution, filter_time=filter_time,
-                         sf_class=CycleSectioner, traces_sf=traces_sf,
+                         sf_class=sf_class, traces_sf=traces_sf,
                          resolution_sf=resolution_sf,
                          filter_time_sf=filter_time_sf)
 
@@ -366,6 +366,9 @@ class Tether(Evaluator):
         return np.unique(base_idx)
 
     def _rfigure(self, legend=True, fig=None, ax=None):
+        """
+        Plot the overview of detected stress release cycles.
+        """
         if fig is None and ax is None:
             fig, ax = plt.subplots()
             suptitle = True

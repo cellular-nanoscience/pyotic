@@ -255,6 +255,10 @@ class Evaluator(object):
         return sections
 
     def undecimate_and_limit(self, sections):
+        """
+        Convert the indices given with the resolution of `self.resolution_sf`
+        to indices given with the resolution of `self.resolution`.
+        """
         # undecimate the sections
         undecimate = self.decimate_sf / self.decimate
         max_stop = int(np.ceil(self.region.datapoints / self.decimate))
@@ -263,6 +267,10 @@ class Evaluator(object):
         return sections
 
     def decimate_and_limit(self, samples):
+        """
+        Convert the indices given with the resolution of `self.resolution`
+        to indices given with the resolution of `self.region.samplingrate`.
+        """
         if samples is None:
             return None
 
