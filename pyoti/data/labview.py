@@ -131,7 +131,7 @@ def read_labview_bin_data(filename, dtype='>d', start_row_idx=0,
         # Set the running indices to the new position (row)
         chunk_row_start = chunk_row_stop
         chunk_row_stop += chunk[1]
-        # Check if information about number of clolumns changed from one to the
+        # Check if information about number of columns changed from one to the
         # next chunk
         if columns == chunk[2] or columns is None:
             columns = chunk[2]
@@ -140,8 +140,7 @@ def read_labview_bin_data(filename, dtype='>d', start_row_idx=0,
         # Check if chunk is (partly) contained within the requested data index
         if (chunk_row_stop > start_row_idx
                 and (number_of_rows < 0 or chunk_row_start < stop_row_idx)):
-            # Shift read position and number of rows to read of first chunk to
-            # cut off overhangs
+            # Check read position and number of rows of first chunk
             if len(chunks) is 0:
                 shift = start_row_idx - chunk_row_start
                 chunk = (chunk[0] + shift * chunk[2],
@@ -149,7 +148,7 @@ def read_labview_bin_data(filename, dtype='>d', start_row_idx=0,
                          chunk[2])
             chunks.append(chunk)
             rows_to_read += chunk[1]
-        # Check position of last datapoint to read of last chunk
+        # Check stop position and number of rows of last chunk
         if (number_of_rows > 0 and chunk_row_stop >= stop_row_idx):
             shift = chunk_row_stop - stop_row_idx
             chunk = (chunk[0], chunk[1] - shift, chunk[2])
@@ -157,7 +156,7 @@ def read_labview_bin_data(filename, dtype='>d', start_row_idx=0,
             rows_to_read -= shift
             break
 
-    if rows_to_read == 0 or number_of_rows == 0:
+    if rows_to_read == 0:
         return np.empty((0, 0))
 
     print('Reading data chunks from:')
