@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.12.11
+ - Fix matplotlib import in PyOTI
 ** Version 0.12.10
  - Improve read_labview_bin_data()
 ** Version 0.12.10
