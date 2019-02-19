@@ -40,7 +40,8 @@ if 'IPython' in sys.modules:
         # We are in a notebook or jupyter lab,
         # try to use ipympl backend (module://ipympl.backend_nbagg)
         try:
-            import ipympl
+            import matplotlib
+            matplotlib.use('module://ipympl.backend_nbagg')
         except ImportError:
             pass
             # default to inline in kernel environments
