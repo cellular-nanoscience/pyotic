@@ -543,8 +543,7 @@ class Modification(GraphMember, metaclass=ABCMeta):
             25.
         sorttrace : int, optional
             Trace (column) of `data` that acts as sorting index upon binning
-            for the rest of the data. Defaults to the first trace (column) in
-            the data.
+            for the rest of the data. Defaults to the first trace of the data.
 
         Returns
         -------
@@ -577,7 +576,7 @@ class Modification(GraphMember, metaclass=ABCMeta):
 
         # fill the bins with the means of the data contained in each bin
         bin_means = np.array([data[indices == i].mean(axis=0)
-                              for i in range(1, len(edges))
+                              for i in range(1, bins + 1)
                               if np.any(indices == i)])
 
         bin_width = edges[1] - edges[0]
