@@ -389,7 +389,7 @@ class Tether(Evaluator):
         line_maxima = None
         t = self.timevector
         for axis, trace in zip('xy', ['positionX', 'positionY']):
-            s = self.get_data(trace)
+            s = self.get_data(traces=trace)
             rstr, rrls = self.stress_release_pairs(axis=axis,
                                                    direction='right')
             lstr, lrls = self.stress_release_pairs(axis=axis, direction='left')

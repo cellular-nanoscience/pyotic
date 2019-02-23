@@ -140,7 +140,7 @@ class Motion(Evaluator):
 
         # Get t, positionZ, psdXYZ and detected plateaus
         t = self.timevector
-        positionZ = self.get_data(self.traces_sf)
+        positionZ = self.get_data(traces=self.traces_sf)
         plateaus = self.plateaus
 
         # Plot the original signal

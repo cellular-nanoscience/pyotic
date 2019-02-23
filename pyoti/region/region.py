@@ -178,7 +178,7 @@ class Region(GraphMember, metaclass=ABCMeta):
             If `self.caching` is False, return the uncached data. Then, `copy`
             has no effect at all.
         time : bool, optional
-            Add the time as the first trace
+            Add the time as the first trace.
         pandas : bool, optional
             Return a pandas.DataFrame with proper indices and columns.
 

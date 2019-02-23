@@ -128,8 +128,8 @@ class Evaluator(object):
 
         self.rfigure = None
 
-    def get_data(self, traces=None, samples=None, copy=False, resolution=0,
-                 moving_filter=None, filter_time=-1.0):
+    def get_data(self, traces=None, samples=None, moving_filter=None,
+                 filter_time=-1.0, copy=False, time=False, resolution=0):
         """
         Get data of `self.region` with a defined resolution and smoothed by
         a moving filter.
@@ -144,11 +144,6 @@ class Evaluator(object):
             you want to have a defined resolution, via the paramters
             `resolution` or the attribute `self.resolution`, do only use int or
             slice and do set the step value of the slice to None or 1.
-        copy: bool, optional
-            see parameters of method `pyoti.region.Region.get_data()`
-        resolution : int, optional
-            Set the resolution of the returned data. If `resolution` <= 0
-            (default), use `self.resolution` to set the resolution of the data.
         moving_filter : str, optional
             The moving filter to apply to the data. Can be one of 'mean' or
             'median'. Only applied, if `filter_time` != 0.0. Defaults to
@@ -158,6 +153,13 @@ class Evaluator(object):
             filter. If `filter_time` is < 0.0 (default), use
             `self.filter_time` as the window length. If `filter_time` == 0.0,
             do not smooth the data.
+        copy: bool, optional
+            see parameters of method `pyoti.region.Region.get_data()`
+        time : bool, optional
+            Add the time as the first trace.
+        resolution : int, optional
+            Set the resolution of the returned data. If `resolution` <= 0
+            (default), use `self.resolution` to set the resolution of the data.
 
         Returns
         -------
@@ -181,9 +183,9 @@ class Evaluator(object):
         # Convert samples into the scope of self.region.get_data()
         samples = self.decimate_and_limit(samples)
 
-        return self.region.get_data(traces=traces, samples=samples, copy=copy,
+        return self.region.get_data(traces=traces, samples=samples,
                                     moving_filter=moving_filter, window=window,
-                                    decimate=decimate)
+                                    decimate=decimate, copy=copy, time=time)
 
     def update(self):
         window = self.window_sf
