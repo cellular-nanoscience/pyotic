@@ -178,7 +178,7 @@ class Region(GraphMember, metaclass=ABCMeta):
             If `self.caching` is False, return the uncached data. Then, `copy`
             has no effect at all.
         pandas : bool, optional
-            Return a pandas.DataFrame with proper indexes and colunmns.
+            Return a pandas.DataFrame with proper indices and columns.
 
         Returns
         -------
