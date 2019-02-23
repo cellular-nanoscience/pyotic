@@ -580,9 +580,9 @@ class Modification(GraphMember, metaclass=ABCMeta):
                               for i in range(1, len(edges))
                               if np.any(indices == i)])
 
-        bin_size = edges[1] - edges[0]
+        bin_width = edges[1] - edges[0]
 
-        return bin_means, bin_size
+        return bin_means, bin_width
 
     def _bins(self, datapoints_per_bin=None):
         # On average 25 datapoints per bin

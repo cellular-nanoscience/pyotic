@@ -234,7 +234,7 @@ class Touchdown(Modification):
             self.right = middle       # right/left border for fitdata
             self.right_upper = upper  # max value (psdZ) for fitdata
 
-        bin_means, bin_size = self.calculate_bin_means(data=data)
+        bin_means, bin_width = self.calculate_bin_means(data=data)
         self.bin_means = bin_means
 
         if not np.any(self.left_means_idx):

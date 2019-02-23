@@ -150,8 +150,8 @@ class Beadscan(Modification):
         # calculate data for fitting
         traces = self.traces_apply
         traces.append('psdZ')
-        bin_means, bin_size = self.calculate_bin_means(traces=traces,
-                                                       sorttrace=2)
+        bin_means, bin_width = self.calculate_bin_means(traces=traces,
+                                                        sorttrace=2)
         self.bin_means = bin_means
 
         # calculate the model for smoothing data
