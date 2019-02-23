@@ -151,7 +151,7 @@ class Region(GraphMember, metaclass=ABCMeta):
             self._v_data_cached = None
 
     def get_data(self, traces=None, samples=None, moving_filter='mean',
-                 window=1, decimate=1, copy=True, pandas=False):
+                 window=1, decimate=1, copy=True, time=False, pandas=False):
         """
         Returns data of this region.
 
@@ -171,12 +171,14 @@ class Region(GraphMember, metaclass=ABCMeta):
             Decimate the data by given value. If `samples` is of type slice and
             `samples.step` is explicitly set (i.e. not None), the step value
             takes precedence over `decimate`.
-        copy: bool, optional
+        copy : bool, optional
             Only if `self.caching` is True, `copy` has the effect of either
             returning a copy of the cached data (`copy`=True) or returning a
             reference to the cached data array.
             If `self.caching` is False, return the uncached data. Then, `copy`
             has no effect at all.
+        time : bool, optional
+            Add the time as the first trace
         pandas : bool, optional
             Return a pandas.DataFrame with proper indices and columns.
 
@@ -224,6 +226,9 @@ class Region(GraphMember, metaclass=ABCMeta):
         if pandas and __pd__:
             return pd.DataFrame(data, index=self.timevector[samples],
                                 columns=self.idx_to_traces(traces_idx))
+
+        if time:
+            return np.c_[self.timevector[samples], data]
 
         return data
 
