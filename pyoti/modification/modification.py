@@ -572,12 +572,17 @@ class Modification(GraphMember, metaclass=ABCMeta):
 
         # Get the indices of the bins to which each value in input array
         # belongs.
-        indices = np.digitize(data[:, sorttrace], edges)
+        bin_idx = np.digitize(data[:, sorttrace], edges)
+
+        # Find which points are on the rightmost edge.
+        on_edge = data[:, sorttrace] == edges[-1]
+        # Shift these points one bin to the left.
+        bin_idx[on_edge] -= 1
 
         # fill the bins with the means of the data contained in each bin
-        bin_means = np.array([data[indices == i].mean(axis=0)
+        bin_means = np.array([data[bin_idx == i].mean(axis=0)
                               for i in range(1, bins + 1)
-                              if np.any(indices == i)])
+                              if np.any(bin_idx == i)])
 
         bin_width = edges[1] - edges[0]
 
