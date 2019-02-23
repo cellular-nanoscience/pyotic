@@ -36,7 +36,7 @@ class GenericMod(Modification):
         # datapoints=-1, if>0 creates an iattribute, which is used for
         #                     decimate/average calculation in functions
         #                   _get_data(), _get_data_apply, and _get_data_based()
-        #                  and binnumber determination in calculate_bin_means()
+        #                  and bins determination in calculate_bin_means()
 
         if modify is None:
             raise TypeError("GenericMod missing required positional argument "

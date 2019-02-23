@@ -521,7 +521,7 @@ class Modification(GraphMember, metaclass=ABCMeta):
         return self._get_data(based=False, samples=samples, traces=traces,
                               window=window, decimate=decimate, copy=copy)
 
-    def calculate_bin_means(self, data=None, traces=None, binnumber=None,
+    def calculate_bin_means(self, data=None, traces=None, bins=None,
                             datapoints_per_bin=None, sorttrace=0):
         """
         Calculates binned means based on the data to be fitted. The binned
@@ -533,10 +533,10 @@ class Modification(GraphMember, metaclass=ABCMeta):
             Defaults to `self._get_data_based(traces=traces, decimate=True)`.
         traces : str or list of str, optional
             Defaults to `self.traces_apply`.
-        binnumber : int, optional
+        bins : int, optional
             Number of bins that contain the datapoints to be averaged. If
             possible, it defaults to (`self.iattributes.datapoints` /
-            `datapoints_per_bin`), otherwise binnumber defaults to
+            `datapoints_per_bin`), otherwise bins defaults to
             (`self.view_based.datapoints` / `datapoints_per_bin`).
         datapoints_per_bin : int, optional
             Average number of datapoints to be averaged in one bin. Defaults to
@@ -555,8 +555,8 @@ class Modification(GraphMember, metaclass=ABCMeta):
         """
         # Bin data and average bins to prevent arbitrary weighting of bins with
         # more datapoints
-        if binnumber is None:
-            binnumber = self._binnumber(datapoints_per_bin=datapoints_per_bin)
+        if bins is None:
+            bins = self._bins(datapoints_per_bin=datapoints_per_bin)
 
         # get the traces to retrieve data from
         if traces is None:
@@ -569,30 +569,30 @@ class Modification(GraphMember, metaclass=ABCMeta):
         # create the bins based on one trace of the data
         minimum = np.min(data[:, sorttrace])
         maximum = np.max(data[:, sorttrace])
-        bins = np.linspace(minimum, maximum, binnumber + 1)
+        edges = np.linspace(minimum, maximum, bins + 1)
 
         # Get the indices of the bins to which each value in input array
         # belongs.
-        indices = np.digitize(data[:, sorttrace], bins)
+        indices = np.digitize(data[:, sorttrace], edges)
 
         # fill the bins with the means of the data contained in each bin
         bin_means = np.array([data[indices == i].mean(axis=0)
-                              for i in range(1, len(bins))
+                              for i in range(1, len(edges))
                               if np.any(indices == i)])
 
-        bin_size = bins[1] - bins[0]
+        bin_size = edges[1] - edges[0]
 
         return bin_means, bin_size
 
-    def _binnumber(self, datapoints_per_bin=None):
+    def _bins(self, datapoints_per_bin=None):
         # On average 25 datapoints per bin
         datapoints_per_bin = datapoints_per_bin or 25
         if 'datapoints' in self.iattributes:
-            binnumber = self.iattributes.datapoints / datapoints_per_bin
+            bins = self.iattributes.datapoints / datapoints_per_bin
         else:
-            binnumber = self.view_based.datapoints / datapoints_per_bin
-        binnumber = max(1, int(np.round(binnumber)))
-        return binnumber
+            bins = self.view_based.datapoints / datapoints_per_bin
+        bins = max(1, int(np.round(bins)))
+        return bins
 
     _NAME = {
         'position': ['positionX', 'positionY'],
