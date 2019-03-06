@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.12.12
+ - Make PyOTC compatible with jupyter lab
 ** Version 0.12.11
  - Fix matplotlib import in PyOTI
 ** Version 0.12.10
