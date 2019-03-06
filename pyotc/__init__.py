@@ -42,11 +42,11 @@ if 'IPython' in sys.modules:
     if 'ZMQInteractiveShell' in repr(ip):
         # We are in a notebook or jupyter lab,
         # try to use ipympl backend (module://ipympl.backend_nbagg)
-    try:
-        import matplotlib
-        matplotlib.use('module://ipympl.backend_nbagg')
-    except ImportError:
-        pass
+        try:
+            import matplotlib
+            matplotlib.use('module://ipympl.backend_nbagg')
+        except ImportError:
+            pass
 
     # Set format for inline plots
     from IPython.display import set_matplotlib_formats
