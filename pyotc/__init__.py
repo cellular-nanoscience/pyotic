@@ -36,12 +36,19 @@ from IPython import get_ipython
 import ipykernel
 
 #Load matplotlib and set backend:
-ip = get_ipython()
-if (hasattr(ipykernel, 'zmqshell')
-   and isinstance(ip, ipykernel.zmqshell.ZMQInteractiveShell)):
-    import matplotlib
-    matplotlib.use('nbAgg')
+if 'IPython' in sys.modules:
+    # We are in an ipython/juypter environment
+    ip = get_ipython()
+    if 'ZMQInteractiveShell' in repr(ip):
+        # We are in a notebook or jupyter lab,
+        # try to use ipympl backend (module://ipympl.backend_nbagg)
+    try:
+        import matplotlib
+        matplotlib.use('module://ipympl.backend_nbagg')
+    except ImportError:
+        pass
 
+    # Set format for inline plots
     from IPython.display import set_matplotlib_formats
     # %config InlineBackend.figure_formats = ['png']
     set_matplotlib_formats('png', 'svg', 'pdf', 'jpeg', quality=90)
