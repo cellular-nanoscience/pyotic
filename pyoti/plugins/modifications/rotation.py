@@ -197,20 +197,21 @@ class IRotation(GraphicalMod):
         positionZ = data_based[:, hp.slicify(5)]
 
         # calculate extension
-        displacementXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
         distanceXYZ = tr.distanceXYZ(calibration, psdXYZ, positionXYZ)
         distance = tr.distance(distanceXYZ, positionXY)
         extension = tr.extension(distance, calibration.radius)
 
         # calculate force
-        force3D = calibration.force(displacementXYZ, positionZ=positionZ)
-        
+        displacementXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
+        # Get the force acting in the same direction as the displacement
+        fXYZ = calibration.force(displacementXYZ, positionZ=positionZ)
+
         force = tr.force(tr.forceXYZ(calibration, psdXYZ, positionZ),
                          positionXY)
         force = {'3D': force,
-                 'X': force3D[:, 0],
-                 'Y': force3D[:, 1],
-                 'Z': force3D[:, 2]}
+                 'X': fXYZ[:, 0],
+                 'Y': fXYZ[:, 1],
+                 'Z': fXYZ[:, 2]}
 
         # determine regions where DNA is stretched to the right and left side
         ex = self.modification._excited()
