@@ -72,24 +72,7 @@ class Tether(Evaluator):
         rightreleases
         stresses
         releases
-        """
-
-        class AttributeCaller(object):
-            def __init__(self, attribute_function, callback_function):
-                self.attribute_function = attribute_function
-                self.callback_function = callback_function
-                update_wrapper(self, callback_function)
-
-            def __getattr__(self, name):
-                return self.attribute_function(name=name)
-
-            def __call__(self, samples=None):
-                return self.callback_function(samples=samples)
-
-        # Convenient objects to access displacement, force, extension via
-        # dot notation: self.displacement or self.displacement() ...
-        self.region = AttributeCaller(self._region, self._region)
-    
+        """    
         sf_class = CycleSectioner
         traces_sf = kwargs.pop('traces_sf', 'positionXY')
 
@@ -1101,20 +1084,20 @@ def displacementXYZ(calibration, psdXYZ, positionZ):
 
 def forceXYZ(calibration, psdXYZ, positionZ):
     """
-    Force in nN, that is acting on the tether
+    Force acting on the bead
     """
     displacementXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
-    forceXY_Z = calibration.force(displacementXYZ, positionZ=positionZ)
+    fXYZ = calibration.force(displacementXYZ, positionZ=positionZ)
 
-    # stressing on the bead (negative displacement) corresponds to a positive
-    # force in Z
-    forceXYZ[:, Z] = - 1.0 * forceXY_Z[:, Z]
+    # Negative/positive displacemnet on the bead results in a
+    # positive/negative force in the opposite direction
+    fXYZ *= - 1.0
 
-    return forceXYZ
+    return fXYZ
 
 def force(forceXYZ, positionXY):
     """
-    Returns force.
+    Magnitude of the force.
 
     Parameters
     ----------
@@ -1125,7 +1108,7 @@ def force(forceXYZ, positionXY):
     # around +/- 0
     # forceZ negative/positive, irrespective of positionZ!
     signF = np.sign(forceXYZ)
-    signF[:, XY] = np.sign(forceXYZ[:, XY]) * np.sign(positionXY)
+    signF[:, XY] = - np.sign(forceXYZ[:, XY]) * np.sign(positionXY)
 
     # square the forces and account for the signs
     force_sq = forceXYZ**2 * signF
@@ -1163,7 +1146,7 @@ def distanceXYZ(calibration, psdXYZ, positionXYZ, radius=None, focalshift=None,
         focalshift = calibration.focalshift
     if radius is None:
         radius = calibration.radius
-    positionZ = positionXYZ[:2]
+    positionZ = positionXYZ[:,2]
 
     displacementXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
 

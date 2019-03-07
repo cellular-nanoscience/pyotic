@@ -198,15 +198,15 @@ class IRotation(GraphicalMod):
 
         # calculate extension
         displacementXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
-        distanceXYZ = tr.distanceXYZ(positionXYZ, displacementXYZ,
-                                     calibration.radius,
-                                     calibration.focalshift)
+        distanceXYZ = tr.distanceXYZ(calibration, psdXYZ, positionXYZ)
         distance = tr.distance(distanceXYZ, positionXY)
         extension = tr.extension(distance, calibration.radius)
 
         # calculate force
         force3D = calibration.force(displacementXYZ, positionZ=positionZ)
-        force = tr.force(tr.forceXYZ(force3D), positionXY)
+        
+        force = tr.force(tr.forceXYZ(calibration, psdXYZ, positionZ),
+                         positionXY)
         force = {'3D': force,
                  'X': force3D[:, 0],
                  'Y': force3D[:, 1],
