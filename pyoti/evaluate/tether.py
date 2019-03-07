@@ -16,6 +16,8 @@ from .. import helpers as hp
 from .evaluate import Evaluator
 from .signalfeature import CycleSectioner
 
+from functools import update_wrapper
+
 
 class Tether(Evaluator):
     """
@@ -71,6 +73,23 @@ class Tether(Evaluator):
         stresses
         releases
         """
+
+        class AttributeCaller(object):
+            def __init__(self, attribute_function, callback_function):
+                self.attribute_function = attribute_function
+                self.callback_function = callback_function
+                update_wrapper(self, callback_function)
+
+            def __getattr__(self, name):
+                return self.attribute_function(name=name)
+
+            def __call__(self, samples=None):
+                return self.callback_function(samples=samples)
+
+        # Convenient objects to access displacement, force, extension via
+        # dot notation: self.displacement or self.displacement() ...
+        self.region = AttributeCaller(self._region, self._region)
+    
         sf_class = CycleSectioner
         traces_sf = kwargs.pop('traces_sf', 'positionXY')
 
@@ -562,7 +581,7 @@ class Tether(Evaluator):
         samples = slice(start, stop)
 
         # Get extension, force, and stress/release pairs
-        e_f = self._force_extension(samples=samples, twoD=twoD) * 1000  # nm,pN
+        e_f = self.force_extension(samples=samples, twoD=twoD) * 1000  # nm,pN
         e = e_f[:, 0]
         f = e_f[:, 1]
 
@@ -664,13 +683,13 @@ class Tether(Evaluator):
             samples = slice(start, stop)
 
         if xlim is None and ylim is None and e is None and f is None:
-                e_f = self._force_extension(samples=samples) * 1000  # nm, pN
+                e_f = self.force_extension(samples=samples) * 1000  # nm, pN
                 e = e_f[:, 0]
                 f = e_f[:, 1]
         if xlim is None and e is None:
-            e = self._extension(samples=samples) * 1000  # nm
+            e = self.extension(samples=samples) * 1000  # nm
         if ylim is None and f is None:
-            f = self._force(samples=samples) * 1000  # pN
+            f = self.force(samples=samples) * 1000  # pN
 
         if xlim is None:
             e_min = e.min()
@@ -851,34 +870,6 @@ class Tether(Evaluator):
                                              bps=bps)
             yield self.fe_figure
 
-    def show_force_extension_plots(self, **kwargs):
-        """
-        Display a slider to show the force extensions created by
-        `self.plot_force_extension()`.
-
-        Parameters
-        ----------
-        **kwargs : dict
-            Keyword arguments passed to `self.plot_force_extension()`.
-
-        Returns
-        -------
-        ipywidgets.IntSlider
-        """
-        # Get number of all force extension pairs
-        stop = len(self.stress_release_pairs(**kwargs)[0])
-
-        def view_image(i):
-            try:
-                self.plot_force_extension(i, **kwargs)
-            except:
-                print('No image found!')
-
-        slider = IntSlider(min=0, max=stop - 1, step=1, value=0,
-                           description='Image:')
-
-        return interact(view_image, i=slider)
-
     def save_force_extension_plots(self, directory=None, file_prefix=None,
                                    file_suffix=None, file_extension='.png',
                                    **kwargs):
@@ -913,154 +904,115 @@ class Tether(Evaluator):
         # Redraw the figure, after the last one has been saved
         self.fe_figure.canvas.draw()
 
-    @property
-    def displacementXYZ(self):
+    def displacementXYZ(self, samples=None):
         """
         Displacement in µm with height dependent calibration factors for X, Y
         and Z.
         """
-        data = self.get_data(traces=['psdXYZ', 'positionZ'])
+        # Get extension (in a fast way)
+        data = self.get_data(traces=['psdXYZ', 'positionZ'], samples=samples)
         psdXYZ = data[:, 0:3]
         positionZ = data[:, [3]]
-        displacementXYZ = self.calibration.displacement(psdXYZ,
-                                                        positionZ=positionZ)
-        return displacementXYZ
+        calibration = self.calibration
 
-    @property
-    def forceXYZ(self):
+        dispXYZ = displacementXYZ(calibration, psdXYZ, positionZ)
+        return dispXYZ
+
+    def forceXYZ(self, samples=None):
         """
         Force in nN, that is acting on the tether
         """
-        positionZ = self.get_data(traces='positionZ')
-        forceXY_Z = self.calibration.force(self.displacementXYZ,
-                                           positionZ=positionZ)
-        return forceXYZ(forceXY_Z)
+        data = self.get_data(traces=['psdXYZ', 'positionZ'], samples=samples)
+        psdXYZ = data[:, 0:3]
+        positionZ = data[:, [3]]
+        calibration = self.calibration
 
-    def _force(self, samples=None, twoD=False):
+        fXYZ = forceXYZ(calibration, psdXYZ, positionZ)
+        return fXYZ
+
+    def force(self, samples=None, twoD=False):
         """
         Magnitude of the force in nN acting on the tethered molecule (1D
         numpy.ndarray).
         """
         # Get force (in a fast way)
         data = self.get_data(traces=['psdXYZ', 'positionXYZ'], samples=samples)
-
         psdXYZ = data[:, 0:3]
         positionXY = data[:, 3:5]
         positionZ = data[:, [5]]
+        calibration = self.calibration
 
-        displacementXYZ \
-            = self.calibration.displacement(psdXYZ, positionZ=positionZ)
         # 2D or 3D calculation of the distance in Z
         if twoD:
-            displacementXYZ[:, Z] = 0.0
-        forceXY_Z = self.calibration.force(displacementXYZ,
-                                           positionZ=positionZ)
+            psdXYZ[:, Z] = 0.0
 
-        fXYZ = forceXYZ(forceXY_Z)
+        fXYZ = forceXYZ(calibration, psdXYZ, positionZ)
         f = force(fXYZ, positionXY)
-
         return f
 
-    @property
-    def force(self):
-        """
-        Magnitude of the force in nN determined in 3D, acting on the tethered
-        molecule.
-        """
-        return self._force()
-
-    @property
-    def distanceXYZ(self):
+    def distanceXYZ(self, samples=None):
         """
         Distance of the attachment point to the bead center for all 3 axes.
         """
-        # µm, point of attachment of DNA
-        positionXYZ = self.get_data(traces='positionXYZ')
-        return distanceXYZ(positionXYZ, self.displacementXYZ,
-                           self.calibration.radius,
-                           self.calibration.focalshift)
+        data = self.get_data(traces=['psdXYZ', 'positionXYZ'], samples=samples)
+        psdXYZ = data[:, 0:3]
+        positionXYZ = data[:, 3:6]
+        calibration = self.calibration
 
-    @property
-    def distance(self):
+        distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ)
+        return distXYZ
+
+    def distance(self, samples=None, twoD=False):
         """
         Distance of the attachment point to the bead center.
         """
-        positionXY = self.get_data(traces='positionXY')
-        return distance(self.distanceXYZ, positionXY)
-
-    def _extension(self, samples=None, twoD=False):
-        """
-        Extension in µm of the tethered molecule (1D numpy.ndarray).
-        """
-        # Get extension (in a fast way)
         data = self.get_data(traces=['psdXYZ', 'positionXYZ'], samples=samples)
-
         psdXYZ = data[:, 0:3]
         positionXYZ = data[:, 3:6]
-        positionXY = positionXYZ[:, 0:2]
-        positionZ = data[:, [5]]
+        positionXY = data[:, 3:5]
+        calibration = self.calibration
 
-        displacementXYZ \
-            = self.calibration.displacement(psdXYZ, positionZ=positionZ)
         # 2D or 3D calculation of the distance in Z
         if twoD:
-            displacementXYZ[:, Z] = 0.0
-        distXYZ = distanceXYZ(positionXYZ, displacementXYZ,
-                              self.calibration.radius,
-                              self.calibration.focalshift)
+            psdXYZ[:, Z] = 0.0
 
+        distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ)
         dist = distance(distXYZ, positionXY)
-        e = extension(dist, self.calibration.radius)
+        return dist
 
-        return e
-
-    @property
-    def extension(self):
+    def extension(self, samples=None, twoD=False):
         """
         Extension of the tethered molecule in µm.
         """
-        return self._extension()
+        calibration = self.calibration
 
-    def _force_extension(self, samples=None, twoD=False):
+        dist = self.distance(samples=samples, twoD=twoD)
+        e = extension(dist, calibration.radius)
+        return e
+
+    def force_extension(self, samples=None, twoD=False):
         """
         Extension (µm, first column) of and force (nN, second column) acting
         on the tethered molecule (2D numpy.ndarray).
         """
         # Get extension and force (in a fast way)
         data = self.get_data(traces=['psdXYZ', 'positionXYZ'], samples=samples)
-
         psdXYZ = data[:, 0:3]
         positionXYZ = data[:, 3:6]
         positionXY = positionXYZ[:, 0:2]
         positionZ = data[:, [5]]
+        calibration = self.calibration
 
-        displacementXYZ \
-            = self.calibration.displacement(psdXYZ, positionZ=positionZ)
         # 2D or 3D calculation of the distance in Z
         if twoD:
-            displacementXYZ[:, Z] = 0.0
-        distXYZ = distanceXYZ(positionXYZ, displacementXYZ,
-                              self.calibration.radius,
-                              self.calibration.focalshift)
-
+            psdXYZ[:, Z] = 0.0
+        distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ)
         dist = distance(distXYZ, positionXY)
-        forceXY_Z = self.calibration.force(displacementXYZ,
-                                           positionZ=positionZ)
+        e = extension(dist, calibration.radius)
 
-        fXYZ = forceXYZ(forceXY_Z)
-
-        e = extension(dist, self.calibration.radius)
+        fXYZ = forceXYZ(calibration, psdXYZ, positionZ)
         f = force(fXYZ, positionXY)
-
         return np.c_[e, f]
-
-    @property
-    def force_extension(self):
-        """
-        Extension (µm, first column) of and force (nN, second column) acting
-        on the tethered molecule (2D numpy.ndarray).
-        """
-        return self._force_extension()
 
     @property
     def angle(self):
@@ -1139,20 +1091,26 @@ XZ = hp.slicify([X, Z])
 YZ = hp.slicify([Y, Z])
 XYZ = hp.slicify([X, Y, Z])
 
+def displacementXYZ(calibration, psdXYZ, positionZ):
+    """
+    Displacement in µm with height dependent calibration factors for X, Y
+    and Z.
+    """
+    dispXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
+    return dispXYZ
 
-def forceXYZ(forceXY_Z, copy=True):
+def forceXYZ(calibration, psdXYZ, positionZ):
     """
     Force in nN, that is acting on the tether
     """
-    if copy:
-        forceXYZ = forceXY_Z.copy()
-    else:
-        forceXYZ = forceXY_Z
+    displacementXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
+    forceXY_Z = calibration.force(displacementXYZ, positionZ=positionZ)
+
     # stressing on the bead (negative displacement) corresponds to a positive
     # force in Z
     forceXYZ[:, Z] = - 1.0 * forceXY_Z[:, Z]
-    return forceXYZ
 
+    return forceXYZ
 
 def force(forceXYZ, positionXY):
     """
@@ -1175,8 +1133,7 @@ def force(forceXYZ, positionXY):
     force = np.sqrt(np.abs(forceSUM)) * np.sign(forceSUM)
     return force
 
-
-def distanceXYZ(positionXYZ, displacementXYZ, radius=0.0, focalshift=1.0,
+def distanceXYZ(calibration, psdXYZ, positionXYZ, radius=None, focalshift=None,
                 clip_Z=True):
     """
     Distance of the attachment point to the bead center for all 3 axes.
@@ -1202,6 +1159,14 @@ def distanceXYZ(positionXYZ, displacementXYZ, radius=0.0, focalshift=1.0,
         Therefore, if you want to check for this kind of error, switch off the
         clip_Z functionality.
     """
+    if focalshift is None:
+        focalshift = calibration.focalshift
+    if radius is None:
+        radius = calibration.radius
+    positionZ = positionXYZ[:2]
+
+    displacementXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
+
     # distance, point of attachment of DNA
     # displacement, displacement of bead out of trap center
     # radius
@@ -1241,7 +1206,6 @@ def distanceXYZ(positionXYZ, displacementXYZ, radius=0.0, focalshift=1.0,
 
     # distance from attachment point to bead center
     return distanceXYZ
-
 
 def distance(distanceXYZ, positionXY):
     """
