@@ -13,7 +13,7 @@ from pyoti import helpers as hp
 
 
 class PyOTICfSource(CalibrationSource):
-    def __init__(self, filename=None, focalshift=0.785, name=None, **kwargs):
+    def __init__(self, filename=None, focalshift=None, name=None, **kwargs):
         if filename is None:
             raise TypeError("PyOTICfSource missing the required positional "
                             "argument 'filename'.")
@@ -37,7 +37,7 @@ class PyOTICfSource(CalibrationSource):
                                 value['mkappa_y'],
                                 value['mkappa_z']]) * factor['mkappa']
         self.radiusspec = value['radius'] * factor['radius']
-        self.focalshift = focalshift
+        self.focalshift = focalshift or value['focal_shift']
         self.name = name or 'OT Investigator and Calibrator Height ' \
                             'Calibration file originally loaded from \n    ' \
                             '%s' % (self.filename)
