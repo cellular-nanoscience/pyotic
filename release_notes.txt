@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.12.15
+ - Update definition of direction of distanceXYZ vector in tether
 ** Version 0.12.14
  - Read the focalshift from pyoticf calibration files
 ** Version 0.12.13
