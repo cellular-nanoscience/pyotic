@@ -935,7 +935,7 @@ class Tether(Evaluator):
 
     def distanceXYZ(self, samples=None):
         """
-        Distance of the attachment point to the bead center for all 3 axes.
+        Distance of the attachment point to the bead center as a 3D vector.
         """
         data = self.get_data(traces=['psdXYZ', 'positionXYZ'], samples=samples)
         psdXYZ = data[:, 0:3]
@@ -1119,7 +1119,7 @@ def force(forceXYZ, positionXY):
 def distanceXYZ(calibration, psdXYZ, positionXYZ, radius=None, focalshift=None,
                 clip_Z=True):
     """
-    Distance of the attachment point to the bead center for all 3 axes.
+    Distance of the attachment point to the bead center as a 3D vector.
     positionXYZ, displacementXYZ and radius need to have the same unit.
     If radius is 0.0, the positionZ is not corrected by the radius. You should
     set radius to 0.0, if the positionZ is defined in such a way, that
@@ -1205,8 +1205,9 @@ def distance(distanceXYZ, positionXY):
     # sign of distanceXY depends on positionXY, important for noise of dist
     # around +/- 0
     # distanceZ negative/positive, irrespective of positionZ!
+    # distanceXY is pointing in the opposite direction of positionXY
     signD = np.sign(distanceXYZ)
-    signD[:, XY] = np.sign(distanceXYZ[:, XY]) * np.sign(positionXY)
+    signD[:, XY] = - np.sign(distanceXYZ[:, XY]) * np.sign(positionXY)
 
     # square the distances and account for the signs
     distance_sq = distanceXYZ**2 * signD
