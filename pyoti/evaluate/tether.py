@@ -1157,6 +1157,9 @@ def distanceXYZ(calibration, psdXYZ, positionXYZ, radius=None, focalshift=None,
     # distance from attachment point to center of bead
     # attachmentXY - displacementXY
     distanceXYZ[:, 0:2] -= displacementXYZ[:, 0:2]
+    # Direction of distance vector is from attachment point
+    # to the bead center
+    distanceXYZ[:, 0:2] *= -1
 
     # If the bead is free (i.e. above the surface with a distance Z > 0), a
     # movement of the positionZ leads to a distance change reduced by the focal
