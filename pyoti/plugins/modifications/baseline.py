@@ -4,6 +4,7 @@ Created on Sun Mar  5 15:23:27 2017
 
 @author: Tobias Jachowski
 """
+import collections
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import UnivariateSpline
@@ -172,8 +173,8 @@ class Baseline(Modification):
         # model fitting
         t = self.view_based.timevector[self.baseline_idx]
 
-        # Finale calculate the means
-        means = hp.calculate_means(data, slices)
+        # Finaly calculate the means
+        means = calculate_means(data, slices)
 
         return t, means
 
@@ -255,6 +256,42 @@ class Baseline(Modification):
     def baseline_kwargs(self, baseline_kwargs):
         self._baseline_kwargs = baseline_kwargs
         self.set_changed()
+
+
+def calculate_means(data, samples=None, stds=False):
+    """
+    Calculate the means of `data`. If `samples_idx` is given, calculate the
+    means of all samples contained in `samples_idx`.
+    Additionally, the standard deviations can be returned, if stds is set to
+    True.
+
+    Parameters
+    ----------
+    data : numpy.ndarray
+    samples : int, slice, or Iterable of int, slice, or index arrays
+        Samples to calcualte the means from.
+    stds : bool, optional
+        Return also the standard deviations for the calculated means.
+
+    Returns
+    -------
+    numpy.ndarray
+        The calculated means
+    (numpy.ndarray, numpy.ndarray)
+        If `stds` is True, the calculated means and standard deviations.
+    """
+    if samples is None:
+        samples = [slice(0, len(data))]
+    if not isinstance(samples, collections.Iterable):
+        samples = [samples]
+
+    means = np.array([data[s].mean(axis=0) for s in samples], ndmin=2)
+
+    if stds:
+        stds = np.array([data[s].std(axis=0, ddof=1) for s in samples], ndmin=2)
+        return means, stds
+
+    return means
 
 
 # The following is only to update to database version 0.8.0

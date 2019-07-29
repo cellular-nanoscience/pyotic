@@ -12,6 +12,8 @@ try:
 except ImportError:
     __pd__ = False
 from abc import ABCMeta, abstractmethod, abstractproperty
+from scipy.ndimage import convolve1d
+from scipy.ndimage import median_filter
 
 from .. import helpers as hp
 from .. import traces as tc
@@ -212,7 +214,7 @@ class Region(GraphMember, metaclass=ABCMeta):
             data = self._get_data(filter_samples, traces_idx, copy=False)
 
             # Filter the data
-            data = hp.moving_filter(data, window, moving_filter=moving_filter)
+            data = moving_filter(data, window, moving_filter=moving_filter)
 
             # Return requested samples, considering decimating factor
             if isinstance(samples, slice):
@@ -438,3 +440,104 @@ class Region(GraphMember, metaclass=ABCMeta):
             return self.get_data(traces=name)
         else:
             raise AttributeError(name)
+
+
+def moving_filter(data, window, moving_filter='mean', mode='reflect', cval=0.0,
+                  origin=0):
+    """
+    Apply a moving filter to data.
+
+    Parameters
+    ----------
+    data : numpy.ndarray
+        The data to be filterd.
+    window : int
+        The window size of the moving filter.
+    moving_filter : str, optional
+        The filter to be used for the moving filter. Can be one of 'mean' or
+        'median'.
+    mode : str, optional
+        mode       |   Ext   |         Data           |   Ext
+        -----------+---------+------------------------+---------
+        'mirror'   | 4  3  2 | 1  2  3  4  5  6  7  8 | 7  6  5
+        'reflect'  | 3  2  1 | 1  2  3  4  5  6  7  8 | 8  7  6
+        'nearest'  | 1  1  1 | 1  2  3  4  5  6  7  8 | 8  8  8
+        'constant' | 0  0  0 | 1  2  3  4  5  6  7  8 | 0  0  0
+        'wrap'     | 6  7  8 | 1  2  3  4  5  6  7  8 | 1  2  3
+        See 'scipy.ndimage.convolve1d' or 'scipy.ndimage.median_filter'
+    cval : float, optional
+        See 'scipy.ndimage.convolve1d' or 'scipy.ndimage.median_filter'
+    origin : int, optional
+        See 'scipy.ndimage.convolve1d' or 'scipy.ndimage.median_filter'
+    """
+    mode = mode or 'reflect'
+    cval = cval or 0.0
+    origin = origin or 0
+    if moving_filter == 'mean' or moving_filter == 'average':
+        return movingmean(data, window, mode=mode, cval=cval, origin=origin)
+    else:  # if moving == 'median'
+        return movingmedian(data, window, mode=mode, cval=cval, origin=origin)
+
+
+def movingmean(data, window, mode='reflect', cval=0.0, origin=0):
+    weights = np.repeat(1.0, window)/window
+    # sma = np.zeros((data.shape[0] - window + 1, data.shape[1]))
+    sma = convolve1d(data, weights, axis=0, mode=mode, cval=cval,
+                     origin=origin)
+    return sma
+
+
+def movingmedian(data, window, mode='reflect', cval=0.0, origin=0):
+    if data.ndim == 1:
+        size = window
+    else:
+        size = (window, 1)
+    smm = median_filter(data, size=size, mode=mode, cval=cval, origin=origin)
+    return smm
+
+
+def moving_mean(data, window):
+    """
+    Calculate a filtered signal by using a moving mean. The first datapoint is
+    the mean of the first `window` datapoints and the last datapoint is the mean
+    of the last `window` datapoints of the original data. This function does not
+    handle the lost edges of the data, i.e. the filtered data is shortened by
+    `window` datapoints.
+
+    This function is faster than the function `movingmean()`.
+
+    Parameters
+    ----------
+    data : 1D numpy.ndarray of type float
+        Data to calculate the rolling mean from.
+    window : int
+        Length of the window to calculate the rolling mean with.
+
+    Returns
+    -------
+    1D numpy.ndarray of type float
+        The data filtered with a rolling mean.
+    """
+    cumsum = np.cumsum(np.insert(data, 0, 0))
+    return (cumsum[window:] - cumsum[:-window]) / window
+
+
+def moving_mean_pandas(data, window):
+    """
+    Calculate a filtered signal by using a moving mean.
+
+    Parameters
+    ----------
+    data : 1D numpy.ndarray of type float
+        Data to calculate the rolling mean from.
+    window : int
+        Length of the window to calculate the rolling mean with.
+
+    Returns
+    -------
+    1D numpy.ndarray of type float
+        The data filtered with a rolling mean.
+    """
+    data = pd.Series(data)
+    r = data.rolling(window=window)
+    return r.mean()[window - 1:].get_values()
