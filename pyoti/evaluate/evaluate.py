@@ -4,10 +4,8 @@ Created on Wed Mar 30 11:55:34 2016
 
 @author: Tobias Jachowski
 """
-import collections
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 
 from . import signal as sn
 from .. import gui
@@ -424,51 +422,3 @@ class Evaluator(object):
     @calibration.setter
     def calibration(self, calibration):
         self._calibration = calibration
-
-
-def save_figures(figures, directory=None, file_prefix=None, file_suffix=None,
-                 file_extension='.png', index_digits=3):
-    """
-    Save matplotlib figures in a given directory.
-
-    The filenames of the figures will be a concatenation of the `file_prefix`,
-    an index with `index_digits` digits, the `file_suffix` and the
-    `file_extension`.
-
-    Parameters
-    ----------
-    figures : Iterable of matplotlib figures or one figure
-        A list, array, generator or other Iterable type of matplotlib figures.
-        If figures is only one matplotlib figure, no index will be included in
-        the filename of the figure.
-    directory : str
-        The directory, the figures should be saved in. The directory will be
-        created, if it does not exist.
-    file_prefix : str, optional
-        A prefix every filename of the saved figures should include.
-    file_suffix : str, optional
-        A suffix every filename of the saved figures should include.
-    files_extension : str, optional
-        The file extension (and type) to be used to save the figures (default
-        '.png').
-    index_digits : int, optional
-        Digits to be used for the index in the filename of the figures.
-    """
-    directory = directory or os.path.join(".", "results")
-    file_prefix = file_prefix or ""
-    file_suffix = file_suffix or ""
-
-    # create results dir
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
-    # If only one figure, save it without an index
-    if not isinstance(figures, collections.Iterable):
-        filename = "%s%s%s" % (file_prefix, file_suffix, file_extension)
-        figures.savefig(os.path.join(directory, filename))
-
-    for idx, fig in enumerate(figures):
-        format_string = "".join(("%s%.", str(index_digits), "i%s%s"))
-        filename = format_string % (file_prefix, idx, file_suffix,
-                                    file_extension)
-        fig.savefig(os.path.join(directory, filename))
