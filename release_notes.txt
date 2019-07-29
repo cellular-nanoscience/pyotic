@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.13.1
+ Retry pypi package upload
 ** Version 
  Clean up the code and remove DNA related functions.
 ** Version 0.12.15
