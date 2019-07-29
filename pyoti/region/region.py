@@ -214,7 +214,7 @@ class Region(GraphMember, metaclass=ABCMeta):
             data = self._get_data(filter_samples, traces_idx, copy=False)
 
             # Filter the data
-            data = moving_filter(data, window, moving_filter=moving_filter)
+            data = _moving_filter(data, window, moving_filter=moving_filter)
 
             # Return requested samples, considering decimating factor
             if isinstance(samples, slice):
@@ -442,7 +442,7 @@ class Region(GraphMember, metaclass=ABCMeta):
             raise AttributeError(name)
 
 
-def moving_filter(data, window, moving_filter='mean', mode='reflect', cval=0.0,
+def _moving_filter(data, window, moving_filter='mean', mode='reflect', cval=0.0,
                   origin=0):
     """
     Apply a moving filter to data.
@@ -474,12 +474,12 @@ def moving_filter(data, window, moving_filter='mean', mode='reflect', cval=0.0,
     cval = cval or 0.0
     origin = origin or 0
     if moving_filter == 'mean' or moving_filter == 'average':
-        return movingmean(data, window, mode=mode, cval=cval, origin=origin)
+        return _movingmean(data, window, mode=mode, cval=cval, origin=origin)
     else:  # if moving == 'median'
-        return movingmedian(data, window, mode=mode, cval=cval, origin=origin)
+        return _movingmedian(data, window, mode=mode, cval=cval, origin=origin)
 
 
-def movingmean(data, window, mode='reflect', cval=0.0, origin=0):
+def _movingmean(data, window, mode='reflect', cval=0.0, origin=0):
     weights = np.repeat(1.0, window)/window
     # sma = np.zeros((data.shape[0] - window + 1, data.shape[1]))
     sma = convolve1d(data, weights, axis=0, mode=mode, cval=cval,
@@ -487,7 +487,7 @@ def movingmean(data, window, mode='reflect', cval=0.0, origin=0):
     return sma
 
 
-def movingmedian(data, window, mode='reflect', cval=0.0, origin=0):
+def _movingmedian(data, window, mode='reflect', cval=0.0, origin=0):
     if data.ndim == 1:
         size = window
     else:
@@ -496,7 +496,7 @@ def movingmedian(data, window, mode='reflect', cval=0.0, origin=0):
     return smm
 
 
-def moving_mean(data, window):
+def _moving_mean(data, window):
     """
     Calculate a filtered signal by using a moving mean. The first datapoint is
     the mean of the first `window` datapoints and the last datapoint is the mean
@@ -522,7 +522,7 @@ def moving_mean(data, window):
     return (cumsum[window:] - cumsum[:-window]) / window
 
 
-def moving_mean_pandas(data, window):
+def _moving_mean_pandas(data, window):
     """
     Calculate a filtered signal by using a moving mean.
 
