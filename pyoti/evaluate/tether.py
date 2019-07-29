@@ -6,17 +6,12 @@ Created on Fri Mar 11 13:36:39 2016
 """
 import matplotlib.pyplot as plt
 import numpy as np
-from ipywidgets import interact, IntSlider
 
 from . import signal as sn
-from . import dna
-from . import evaluate
 from .. import gui
 from .. import helpers as hp
 from .evaluate import Evaluator
 from .signalfeature import CycleSectioner
-
-from functools import update_wrapper
 
 
 class Tether(Evaluator):
@@ -72,7 +67,7 @@ class Tether(Evaluator):
         rightreleases
         stresses
         releases
-        """    
+        """
         sf_class = CycleSectioner
         traces_sf = kwargs.pop('traces_sf', 'positionXY')
 
@@ -697,196 +692,6 @@ class Tether(Evaluator):
         # Return the set limits
         return xlim, ylim
 
-    def update_force_extension_plot(self, fe_pair=None, xlim=None, ylim=None,
-                                    title=None, draw=True, bps=None):
-        """
-        Update the figure with force extension data.
-
-        Parameters
-        ----------
-        fe_pair : tuple of 6 1D numpy.ndarrays, optional
-            As returned by the method `self.force_extension_pair()`.
-        xlim : (float, float), optional
-            Set xlim of the axis.
-        ylim : (float, float), optional
-            Set ylim of the axis.
-        title : str
-            Set the title of the figure.
-        draw : bool
-            Redraw, after the the data has been updated.
-        bps : int
-            If lenght of DNA in basepairs is given, a standard stretching
-            curve is plotted.
-        """
-        if self.fe_figure is None:
-            self.init_fe_fig(show=False)
-
-        fig = self.fe_figure
-        ax = fig.axes[0]
-
-        if xlim is not None:
-            ax.set_xlim(xlim)
-        if ylim is not None:
-            ax.set_ylim(ylim)
-
-        # Get stress/release extension/force data pair
-        if fe_pair is not None:
-            # Unpack force_extension_pair and set the line data to the unpacked
-            # values
-            time = False
-            if len(fe_pair) == 8:
-                time = True
-
-            if time:
-                est, fst, sti, erl, frl, rli, tst, trl = fe_pair
-            else:
-                est, fst, sti, erl, frl, rli = fe_pair
-            ax.lines[0].set_data(est, fst)
-            ax.lines[1].set_data(erl, frl)
-            # Autodetermine the title
-            if time:
-                title = title or "Force Extension, %s, %s, (%.3f, %.3f) s" \
-                                 % (sti[0], sti[1], tst[0], trl[-1])
-            else:
-                title = title or "Force Extension, %s, %s" % (sti[0], sti[1])
-
-        # Calculate force extension of a dna with a known length and plot it
-        if bps:
-            x, F = dna.force_extension(bps=bps)
-            ax.lines[2].set_data(x*1e9, F*1e12)
-        else:
-            ax.lines[2].set_data([0], [0])
-
-        if title is not None:
-            ax.set_title(title)
-
-        if draw:
-            fig.canvas.draw()
-
-    def plot_force_extension(self, i, autolimit=True, xlim=None, ylim=None,
-                             bps=None, draw=True, **kwargs):
-        """
-        Plot the force extension data with index `i` (see method
-        `self.force_extension_pairs()`) on self.fe_figure.
-
-        Parameters
-        ----------
-        i : int
-            Index of force extension pair. See method
-            `self.force_extension_pair()`.
-        autolimit : bool, optional
-            Automatically detect xlim and/or ylim from min/max values of force
-            and extension. The limits are only detected, if `xlim` and/or
-            `ylim` are not supplied.
-        xlim : (float, float), optional
-            Xlimit of force extension axis.
-        ylim : (float, float), optional
-            Ylimit of force extension axis.
-        bps : int, optional
-            Base pairs of standard force extension curve of a dsDNA to be
-            plotted along with the experimental data.
-        draw : bool, optional
-            Update the figure, after data has been plotted.
-        **kwargs : dict, optional
-            Keyword arguments passed to `self.force_extension_pair()`.
-        """
-        fe_pair = self.force_extension_pair(i, **kwargs)
-        e = np.r_[fe_pair[0], fe_pair[3]]
-        f = np.r_[fe_pair[1], fe_pair[4]]
-        time = kwargs.get('time', False)
-
-        if autolimit:
-            xlim, ylim = self.autolimit(e=e, f=f, xlim=xlim, ylim=ylim,
-                                        set_limits=False)
-        if time:
-            title = "Force Extension %.3i, %s, %s, (%.3f, %.3f) s" \
-                    % (i, fe_pair[2][0], fe_pair[2][1], fe_pair[6][0],
-                       fe_pair[7][-1])
-        else:
-            title = "Force Extension %.3i, %s, %s" % (i, fe_pair[2][0],
-                                                      fe_pair[2][1])
-
-        self.update_force_extension_plot(fe_pair=fe_pair, xlim=xlim, ylim=ylim,
-                                         title=title, draw=draw, bps=bps)
-
-    def plot_force_extensions(self, autolimit=True, xlim=None, ylim=None,
-                              bps=None, draw=True):
-        """
-        Plot force/extension stress/release pairs on an axis of a figure.
-
-        Parameters
-        ----------
-        autolimit : bool, optional
-            Automatically detect xlim and/or ylim from min/max values of force
-            and extension. The limits are only detected, if `xlim` and/or
-            `ylim` are not supplied.
-        xlim : (float, float), optional
-            Xlimit of force extension axis.
-        ylim : (float, float), optional
-            Ylimit of force extension axis.
-        bps : int, optional
-            Base pairs of standard force extension curve of a dsDNA to be
-            plotted along with the experimental data.
-        draw : bool, optional
-            Update the figure, after data has been plotted.
-
-        Yields
-        ------
-        matplotlib.figure.Figure
-            Yield a reference to the figure, after the next force extension
-            force/extension stress/release data pair has been plotted.
-        """
-        # Get xlim and ylim according to min/max values of the force extension
-        # pairs to be plotted
-        if autolimit:
-            xlim, ylim = self.autolimit(xlim=xlim, ylim=ylim, set_limits=False)
-
-        # Get force extension pairs generator
-        fe_pairs = self.force_extension_pairs()
-
-        # Plot all stress/release extension/force data pairs
-        for idx, fe_pair in enumerate(fe_pairs):
-            title = "Force Extension %.3i, %s, %s" % (idx, fe_pair[2][0],
-                                                      fe_pair[2][1])
-            self.update_force_extension_plot(fe_pair=fe_pair, xlim=xlim,
-                                             ylim=ylim, title=title, draw=draw,
-                                             bps=bps)
-            yield self.fe_figure
-
-    def save_force_extension_plots(self, directory=None, file_prefix=None,
-                                   file_suffix=None, file_extension='.png',
-                                   **kwargs):
-        """
-        Save all plots created by `plot_force_extensions()`.
-
-        directory : str
-            The directory the images to be displayed are located in.
-        file_prefix : str
-            Display only the files beginning with `prefix`.
-        file_suffix : str
-            Display only the files ending with `suffix`.
-        file_extension : str, optional
-            The extension of the images that should be displayed. Default is
-            '.png'.
-        figure : matplotlib figure, optional
-            A reference to a figure that should be used to plot the force
-            extension pairs. If no figure is given, a new one is automatically
-            created.
-        **kwargs
-            Parameters passed to the method `self.plot_force_extensions()`.
-        """
-        kwargs.pop('draw', None)
-        # Create generator for all force/extension stress/release pairs
-        figures = self.plot_force_extensions(draw=False, **kwargs)
-
-        # Save all figures
-        evaluate.save_figures(figures, directory=directory,
-                              file_prefix=file_prefix, file_suffix=file_suffix,
-                              file_extension=file_extension)
-
-        # Redraw the figure, after the last one has been saved
-        self.fe_figure.canvas.draw()
-
     def displacementXYZ(self, samples=None):
         """
         Displacement in µm with height dependent calibration factors for X, Y
@@ -1285,43 +1090,3 @@ def _angle(a, b, c, angle='A'):
 
     cos_angle = (_a**2 + _b**2 - _c**2) / (2 * _a * _b)
     return np.arccos(np.fabs(cos_angle)) * 180.0 / np.pi
-
-
-def _force_extension_figure(grid=True):
-    """
-    Create a figure to plot force/extension stress/release pair(s).
-
-    Parameters
-    ----------
-    grid : bool
-        Switch on/of the grid of the axis.
-
-    Returns
-    -------
-    matplotlib.figure.Figure
-        Return a reference to the figure.
-    """
-    # Create figure and axis for plotting
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
-
-    # Set labels
-    ax.set_xlabel("Extension (nm)")
-    ax.set_ylabel("Force (pN)")
-
-    # Switch on/off grid
-    ax.grid(grid)
-
-    # Create lines for stress/release extension/force data pairs
-    # line_stress =
-    ax.plot([0], [0], 'm.', ms=1.0)
-    # line_release =
-    ax.plot([0], [0], 'c.', ms=1.0)
-    # standard curve for DNA
-    ax.plot([0], [0], 'r')
-
-    # Plot stress/release extension/force data pairs
-    title = "Force Extension"
-    ax.set_title(title)
-
-    return fig
