@@ -1,4 +1,6 @@
 * Release notes
+** Version 
+ Clean up the code and remove DNA related functions.
 ** Version 0.12.15
  - Update definition of direction of distanceXYZ vector in tether
 ** Version 0.12.14
