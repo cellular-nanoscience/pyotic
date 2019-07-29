@@ -81,17 +81,17 @@ class Motion(Evaluator):
 
     def _sections(self, plateaus=True, direction=None, **kwargs):
         if plateaus:
-            if direction is 'pos':
+            if direction == 'pos':
                 sections = self._sf.pos_plateau_segments
-            elif direction is 'neg':
+            elif direction == 'neg':
                 sections = self._sf.neg_plateau_segments
             else:
                 sections = self._sf.plateau_segments
             sections = self._shift_and_size_segments(sections)
         else:  # steps instead of plateaus
-            if direction is 'pos':
+            if direction == 'pos':
                 steps = self._sf.pos_steps
-            elif direction is 'neg':
+            elif direction == 'neg':
                 steps = self._sf.neg_steps
             else:
                 steps = self._sf.steps
