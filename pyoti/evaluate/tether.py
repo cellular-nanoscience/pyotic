@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from . import signal as sn
-from .. import gui
 from .. import helpers as hp
 from .evaluate import Evaluator
 from .signalfeature import CycleSectioner
@@ -582,116 +581,6 @@ class Tether(Evaluator):
             else:
                 yield est, fst, sti, erl, frl, rli
 
-    def init_fe_fig(self, show=True, autolimit=True, plot_params=None):
-        """
-        Initialize the figure where the force extension pairs should be plotted
-        to.
-
-        Parameters
-        ----------
-        show : bool, optional
-            Show the figure in the notebook after it has been initialized.
-        autolimit : bool, optional
-            Set the limits of the force extension plot according to the min/max
-            values of the force and extension.
-        plot_params : dict, optional
-        """
-        xlim = None
-        ylim = None
-        if self.fe_figure is not None:
-            ax = self.fe_figure.axes[0]
-            xlim = ax.get_xlim()
-            ylim = ax.get_ylim()
-            plt.close(self.fe_figure)
-
-        # Initialize proper plot parameters
-        gui.set_plot_params(plot_params=plot_params)
-
-        # Create static figure
-        self.fe_figure = _force_extension_figure()
-
-        if autolimit:
-            self.autolimit()
-        else:
-            ax = self.fe_figure.axes[0]
-            ax.set_xlim(xlim)
-            ax.set_ylim(ylim)
-
-        if show:
-            self.fe_figure.show()
-
-    def autolimit(self, samples=None, e=None, f=None, xlim=None, ylim=None,
-                  set_limits=True):
-        """
-        Determine xlim and ylim values for the force extension pair plots.
-
-        Parameters
-        ----------
-        samples : int, slice or index array, optional
-            Samples to get extension and force from.
-        e : 1D numpy.ndarray of floats, optional
-            Extension in nm. Takes precedence over extension determined with
-            `samples`.
-        f : 1D numpy.ndarray of floats, optional
-            Force in pN. Takes precedence over force determined with `samples`.
-        xlim : (float, float), optional
-            Xlimit of force extension axis. Takes precedence over xlim
-            determined with `e`.
-        ylim : (float, float), optional
-            Ylimit of force extension axis. Takes precedence over ylim
-            determined with `f`.
-        set_limits : bool, optional
-            Set xlim and ylim of the force extension plot.
-
-        Returns
-        -------
-        (float, float)
-            The xlim
-        (float, float)
-            The ylim
-        """
-        if samples is None \
-                and (xlim is None and e is None) \
-                or (ylim is None and f is None):
-            # Get the start/stop indices of the data to be used to determine
-            # the min max values
-            sts, rls = self.stress_release_pairs()
-            start = sts[0].start
-            stop = rls[-1].stop
-            samples = slice(start, stop)
-
-        if xlim is None and ylim is None and e is None and f is None:
-                e_f = self.force_extension(samples=samples) * 1000  # nm, pN
-                e = e_f[:, 0]
-                f = e_f[:, 1]
-        if xlim is None and e is None:
-            e = self.extension(samples=samples) * 1000  # nm
-        if ylim is None and f is None:
-            f = self.force(samples=samples) * 1000  # pN
-
-        if xlim is None:
-            e_min = e.min()
-            e_max = e.max()
-            e_diff = (e_max - e_min) * 0.02
-            xlim = (e_min - e_diff, e_max + e_diff)
-
-        if ylim is None:
-            f_min = f.min()
-            f_max = f.max()
-            f_diff = (f_max - f_min) * 0.02
-            ylim = (f_min - f_diff, f_max + f_diff)
-
-        # Set the limits
-        if set_limits:
-            fig = self.fe_figure
-            ax = fig.axes[0]
-            ax.set_xlim(xlim)
-            ax.set_ylim(ylim)
-            fig.canvas.draw()
-
-        # Return the set limits
-        return xlim, ylim
-
     def displacementXYZ(self, samples=None):
         """
         Displacement in µm with height dependent calibration factors for X, Y
@@ -879,6 +768,7 @@ XZ = hp.slicify([X, Z])
 YZ = hp.slicify([Y, Z])
 XYZ = hp.slicify([X, Y, Z])
 
+
 def displacementXYZ(calibration, psdXYZ, positionZ):
     """
     Displacement in µm with height dependent calibration factors for X, Y
@@ -886,6 +776,7 @@ def displacementXYZ(calibration, psdXYZ, positionZ):
     """
     dispXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
     return dispXYZ
+
 
 def forceXYZ(calibration, psdXYZ, positionZ):
     """
@@ -899,6 +790,7 @@ def forceXYZ(calibration, psdXYZ, positionZ):
     fXYZ *= - 1.0
 
     return fXYZ
+
 
 def force(forceXYZ, positionXY):
     """
@@ -920,6 +812,7 @@ def force(forceXYZ, positionXY):
     forceSUM = np.sum(force_sq, axis=1)
     force = np.sqrt(np.abs(forceSUM)) * np.sign(forceSUM)
     return force
+
 
 def distanceXYZ(calibration, psdXYZ, positionXYZ, radius=None, focalshift=None,
                 clip_Z=True):
@@ -997,6 +890,7 @@ def distanceXYZ(calibration, psdXYZ, positionXYZ, radius=None, focalshift=None,
 
     # distance from attachment point to bead center
     return distanceXYZ
+
 
 def distance(distanceXYZ, positionXY):
     """
