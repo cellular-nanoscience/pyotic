@@ -5,7 +5,6 @@ Created on Thu May 22 19:49:29 2014
 @author: Tobias Jachowski
 """
 import collections
-import io
 import os
 import numpy as np
 try:
@@ -24,15 +23,6 @@ elif sys.platform == "darwin":
     platform = 'darwin'
 elif sys.platform == "win32":
     platform = 'win32'
-
-
-def get_png_image(figure):
-    figure.canvas.draw()
-    buf = io.BytesIO()
-    figure.savefig(buf, format='png')
-    png = buf.getvalue()
-    buf.close()
-    return png
 
 
 def slicify(index, length=-1):
