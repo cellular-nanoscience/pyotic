@@ -7,11 +7,8 @@ Created on Wed Mar  9 17:07:32 2016
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-from ipywidgets import interact, IntSlider
-from IPython.core.display import Image, display
 from matplotlib.widgets import SpanSelector
 
-from . import helpers as hp
 from . import traces as tc
 
 
@@ -496,45 +493,3 @@ def set_plot_params(plot_params=None):
         }
 
     plt.rcParams.update(rcparams)
-
-
-def browse_images(directory, prefix=None, suffix=None, extension='.png',
-                  sort_key=None):
-    """
-    Display images of a directory with an interactive widget and a slider in a
-    jupyter notebook, in the order sorted to their filename or a given key
-    function.
-
-    Parameters
-    ----------
-    directory : str
-        The directory the images to be displayed are located in.
-    prefix : str
-        Display only the files beginning with `prefix`.
-    suffix : str
-        Display only the files ending with `suffix`.
-    extension : str, optional
-        The extension of the images that should be displayed. Default is
-        '.png'.
-    sort_key : function
-        Function to be applied to every image filename found, before sorting.
-    """
-    images = hp.files(directory, prefix, suffix, extension, sort_key)
-    stop = len(images)
-    if stop < 1:
-        print("No file found with prefix '%s', suffix '%s', and extension '%s'"
-              % (prefix, suffix, extension))
-        return
-
-    def view_image(i):
-        image = images[i]
-        try:
-            display(Image(filename=image))
-            print(image)
-        except:
-            print('No image found!')
-
-    slider = IntSlider(min=0, max=stop-1, step=1, value=0,
-                       description='Image:')
-
-    return interact(view_image, i=slider)
