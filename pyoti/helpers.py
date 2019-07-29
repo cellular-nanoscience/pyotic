@@ -323,34 +323,3 @@ def file_and_dir(filename=None, directory=None):
     absfile = os.path.join(absdir, ffile)
 
     return ffile, absdir, absfile
-
-
-def files(directory, prefix=None, suffix=None, extension=None, sort_key=None):
-    """
-    Get filenames of a directory in the order sorted to their filename or a
-    given key function.
-
-    Parameters
-    ----------
-    directory : str
-        The directory the files are located in.
-    prefix : str
-        Get only the files beginning with `prefix`.
-    suffix : str
-        Get only the files ending with `suffix`.
-    extension : str, optional
-        The extension of the files that should be returned. Default is
-        '.txt'.
-    sort_key : function
-        Function to be applied to every filename found, before sorting.
-    """
-    prefix = prefix or ''
-    suffix = suffix or ''
-    extension = extension or ''
-    files = [file_and_dir(filename=name, directory=directory)[2]
-             for name in os.listdir(directory)
-             if os.path.isfile(os.path.join(directory, name))
-             and name.startswith(prefix)
-             and name.endswith(''.join((suffix, extension)))]
-    files.sort(key=sort_key)
-    return files
