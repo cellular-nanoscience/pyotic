@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.14.1
+ Add trap_height as possible trace
 ** Version 0.14.0
  Switch to SI units throughout the whole project
 ** Version 0.13.1
