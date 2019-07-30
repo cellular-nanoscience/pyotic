@@ -144,15 +144,15 @@ class Motion(Evaluator):
         plateaus = self.plateaus
 
         # Plot the original signal
-        ax.plot(t, positionZ, color='k', alpha=0.1)
+        ax.plot(t, positionZ * 1e6, color='k', alpha=0.1)
 
         # Plot the detected plateaus (positionZ) and store psd data chunks and
         # heights
         for plat in plateaus:
-            ax.plot(t[plat], positionZ[plat])
+            ax.plot(t[plat], positionZ[plat] * 1e6)
 
-        ax.set_ylabel("Signal %s (um)" % (self.traces_sf))
         ax.set_xlabel('Time (s)')
+        ax.set_ylabel("Signal %s (um)" % (self.traces_sf))
         figure.suptitle('Automatically detected plateaus.')
 
         return figure

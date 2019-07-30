@@ -59,13 +59,13 @@ def read_pyotic_hc_result(filename):
             values[key] = value
 
     factors = {}
-    factors['radius'] = ureg(units['radius']).to('um').magnitude
+    factors['radius'] = ureg(units['radius']).to('m').magnitude
     factors['apparent_distance'] \
-        = ureg(units['apparent_distance']).to('um').magnitude
-    factors['beta'] = ureg(units['beta']).to('nm/mV').magnitude
-    factors['mbeta'] = ureg(units['mbeta']).to('nm/(mV*um)').magnitude
-    factors['kappa'] = ureg(units['kappa']).to('pN/nm').magnitude
-    factors['mkappa'] = ureg(units['mkappa']).to('pN/(nm*um)').magnitude
+        = ureg(units['apparent_distance']).to('m').magnitude
+    factors['beta'] = ureg(units['beta']).to('m/V').magnitude
+    factors['mbeta'] = ureg(units['mbeta']).to('m/(V*m)').magnitude
+    factors['kappa'] = ureg(units['kappa']).to('N/m').magnitude
+    factors['mkappa'] = ureg(units['mkappa']).to('N/(m*m)').magnitude
 
     return values, factors
 
@@ -86,37 +86,37 @@ class PyOTICSource(CalibrationSource):
     def dsurf(self):
         return self.hc.height_fit_results.h0
         # value['apparent_surface_distance']
-        # * ureg(units['apparent_distance']).to('um').magnitude
+        # * ureg(units['apparent_distance']).to('m').magnitude
 
     @property
     def beta(self):
         hfr = self.hc.height_fit_results
         return np.array([hfr.beta_x, hfr.beta_y, hfr.beta_z])
-        # * ureg(units['beta']).to('nm/mV').magnitude
+        # * ureg(units['beta']).to('m/V').magnitude
 
     @property
     def kappa(self):
         hfr = self.hc.height_fit_results
         return np.array([hfr.kappa_x, hfr.kappa_y, hfr.kappa_z])
-        # * ureg(units['kappa']).to('pN/nm').magnitude
+        # * ureg(units['kappa']).to('N/m').magnitude
 
     @property
     def mbeta(self):
         hfr = self.hc.height_fit_results
         return np.array([hfr.mbeta_x, hfr.mbeta_y, hfr.mbeta_z])
-        # * ureg(units['mbeta']).to('nm/(mV*um)').magnitude
+        # * ureg(units['mbeta']).to('m/(V*m)').magnitude
 
     @property
     def mkappa(self):
         hfr = self.hc.height_fit_results
         return np.array([hfr.mkappa_x, hfr.mkappa_y, hfr.mkappa_z])
-        # * ureg(units['mkappa']).to('pN/(nm*um)').magnitude
+        # * ureg(units['mkappa']).to('N/(m*m)').magnitude
 
     @property
     def radiusspec(self):
         return self.hc.height_fit_results.radius
         # value['radius']
-        # * ureg(units['radius']).to('um').magnitude
+        # * ureg(units['radius']).to('m').magnitude
 
     @property
     def focalshift(self):
@@ -140,11 +140,11 @@ class PyOTICSingleSource(CalibrationSource):
         # calculate conversion factors
         ureg = pint.UnitRegistry()
         factor = {}
-        factor['radius'] = ureg(pars['radius_unit']).to('um').magnitude
+        factor['radius'] = ureg(pars['radius_unit']).to('m').magnitude
         factor['beta'] \
-            = ureg(pars['displacement_sensitivity_unit']).to('nm/mV').magnitude
+            = ureg(pars['displacement_sensitivity_unit']).to('m/V').magnitude
         factor['kappa'] \
-            = ureg(pars['trapstiffness_unit']).to('pN/nm').magnitude
+            = ureg(pars['trapstiffness_unit']).to('N/m').magnitude
 
         # extract the calibration data
         self.excited_axis = int(data['ex_axis'])

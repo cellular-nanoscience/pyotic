@@ -88,15 +88,15 @@ class ITouchdown(GraphicalMod):
                 traces=['positionZ', 'psdZ'], decimate=True, copy=False)
             self.modification.validate_fit_params(data=data)
             bin_means = self.modification.bin_means
-            minx = data[:, 0].min() - 0.05
-            maxx = data[:, 0].max() + 0.05
+            minx = data[:, 0].min() - 0.05e-6  # m
+            maxx = data[:, 0].max() + 0.05e-6  # m
             miny = data[:, 1].min() - 0.05
             maxy = data[:, 1].max() + 0.05
-            self._ax.set_xlim([minx, maxx])
+            self._ax.set_xlim([minx * 1e6, maxx * 1e6])  # µm
             self._ax.set_ylim([miny, maxy])
 
-            self._lines['orig_data'].set_data(data[:, 0], data[:, 1])
-            self._lines['binned_data'].set_data(bin_means[:, 0],
+            self._lines['orig_data'].set_data(data[:, 0] * 1e6, data[:, 1])
+            self._lines['binned_data'].set_data(bin_means[:, 0] * 1e6,
                                                 bin_means[:, 1])
 
         # get left and right datapoint means according to fit borders for
@@ -105,19 +105,19 @@ class ITouchdown(GraphicalMod):
         left_means = self.modification.left_means
         right_means = self.modification.right_means
 
-        self._lines['ext_left'].set_data(bin_means[:, 0], self.get_pv_left(
-                                         bin_means[:, 0]))
-        self._lines['ext_right'].set_data(bin_means[:, 0], self.get_pv_right(
-                                          bin_means[:, 0]))
-        self._lines['fit_left'].set_data(left_means[:, 0], self.get_pv_left(
-                                         left_means[:, 0]))
-        self._lines['fit_right'].set_data(right_means[:, 0], self.get_pv_right(
-                                          right_means[:, 0]))
-        self._lines['touchdown'].set_xdata([self.modification.touchdown,
-                                            self.modification.touchdown])
+        self._lines['ext_left'].set_data(bin_means[:, 0] * 1e6,
+                                         self.get_pv_left(bin_means[:, 0]))
+        self._lines['ext_right'].set_data(bin_means[:, 0] * 1e6,
+                                          self.get_pv_right(bin_means[:, 0]))
+        self._lines['fit_left'].set_data(left_means[:, 0] * 1e6,
+                                         self.get_pv_left(left_means[:, 0]))
+        self._lines['fit_right'].set_data(right_means[:, 0] * 1e6,
+                                          self.get_pv_right(right_means[:, 0]))
+        self._lines['touchdown'].set_xdata([self.modification.touchdown * 1e6,
+                                            self.modification.touchdown * 1e6])
         self._lines['touchdown_calib'].set_xdata(
-            [self.modification._calibration.touchdown,
-             self.modification._calibration.touchdown])
+            [self.modification._calibration.touchdown * 1e6,
+             self.modification._calibration.touchdown * 1e6])
 
     def _pre_close_fig(self):
         # Store touchdown fit plot for documentation
@@ -148,12 +148,12 @@ class ITouchdown(GraphicalMod):
         """
         if event.button == 1:  # left mouse button -> adjust left fitdata
             # left border for fitdata
-            self.modification.left = self._cursor.linev.get_xdata()[0]
+            self.modification.left = self._cursor.linev.get_xdata()[0] * 1e-6  # m
             # max value (psdZ) for fitdata
             self.modification.left_upper = self._cursor.lineh.get_ydata()[0]
         else:  # right (or middle) mouse button -> adjust right fitdata
             # right border for fitdata
-            self.modification.right = self._cursor.linev.get_xdata()[0]
+            self.modification.right = self._cursor.linev.get_xdata()[0] * 1e-6  # m
             # max value (psdZ) for fitdata
             self.modification.right_upper = self._cursor.lineh.get_ydata()[0]
 
@@ -180,7 +180,7 @@ class Touchdown(Modification):
                          traces_apply=traces_apply, **kwargs)
 
         # register a widget, giving a key, a function called upon change
-        self.add_iattribute('touchdown', description="Touchdown (V)",
+        self.add_iattribute('touchdown', description="Touchdown (m)",
                             value=0.0)
 
         # Initially set touchdown to touchdown of calibration, if touchdown

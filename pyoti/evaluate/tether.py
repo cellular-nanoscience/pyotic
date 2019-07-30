@@ -385,7 +385,7 @@ class Tether(Evaluator):
         line_maxima = None
         t = self.timevector
         for axis, trace in zip('xy', ['positionX', 'positionY']):
-            s = self.get_data(traces=trace)
+            s = self.get_data(traces=trace) * 1e6  # m -> µm
             rstr, rrls = self.stress_release_pairs(axis=axis,
                                                    direction='right')
             lstr, lrls = self.stress_release_pairs(axis=axis, direction='left')
@@ -439,8 +439,8 @@ class Tether(Evaluator):
 
         ax.set_xlim((t[0], t[-1]))
 
-        ax.set_ylabel("Signal positionX and Y (um)")
         ax.set_xlabel("Time (s)")
+        ax.set_ylabel("Signal positionX and Y (µm)")
         if suptitle:
             fig.suptitle("Automatically detected excited axis, minima, "
                          "maxima, and sections.")
@@ -486,17 +486,17 @@ class Tether(Evaluator):
         Returns
         -------
         1D numpy.ndarray of type float
-            Extension values of stress cycles in nm.
+            Extension values of stress cycles in m.
         1D numpy.ndarray of type float
-            Force values of stress cycles in pN.
+            Force values of stress cycles in N.
         1D numpy.ndarray of type str
             (str, str, str), containing the axis, direction, and the cycle.
             Axis can be either 'x' or 'y'. Direction can be 'left', or 'right'.
             Cycle is 'stress'.
         1D numpy.ndarray of type float
-            Extension values of release cycles in nm.
+            Extension values of release cycles in m.
         1D numpy.ndarray of type float
-            Force values of release cycles in pN.
+            Force values of release cycles in N.
         1D numpy.ndarray of type str
             (str, str, str), containing the axis, direction, and the cycle.
             Axis can be either 'x' or 'y'. Direction can be 'left', or 'right'.
@@ -527,17 +527,17 @@ class Tether(Evaluator):
         Yields
         ------
         1D numpy.ndarray of type float
-            Extension values of stress cycles in nm.
+            Extension values of stress cycles in m.
         1D numpy.ndarray of type float
-            Force values of stress cycles in pN.
+            Force values of stress cycles in N.
         1D numpy.ndarray of type str
             (str, str, str), containing the axis, direction, and the cycle.
             Axis can be either 'x' or 'y'. Direction can be 'left', or 'right'.
             Cycle is 'stress'.
         1D numpy.ndarray of type float
-            Extension values of release cycles in nm.
+            Extension values of release cycles in m.
         1D numpy.ndarray of type float
-            Force values of release cycles in pN.
+            Force values of release cycles in N.
         1D numpy.ndarray of type str
             (str, str, str), containing the axis, direction, and the cycle.
             Axis can be either 'x' or 'y'. Direction can be 'left', or 'right'.
@@ -558,7 +558,7 @@ class Tether(Evaluator):
         samples = slice(start, stop)
 
         # Get extension, force, and stress/release pairs
-        e_f = self.force_extension(samples=samples, twoD=twoD) * 1000  # nm,pN
+        e_f = self.force_extension(samples=samples, twoD=twoD)  # m,N
         e = e_f[:, 0]
         f = e_f[:, 1]
 
@@ -583,7 +583,7 @@ class Tether(Evaluator):
 
     def displacementXYZ(self, samples=None):
         """
-        Displacement in µm with height dependent calibration factors for X, Y
+        Displacement in m with height dependent calibration factors for X, Y
         and Z.
         """
         # Get extension (in a fast way)
@@ -597,7 +597,7 @@ class Tether(Evaluator):
 
     def forceXYZ(self, samples=None):
         """
-        Force in nN, that is acting on the tether
+        Force in N, that is acting on the tether
         """
         data = self.get_data(traces=['psdXYZ', 'positionZ'], samples=samples)
         psdXYZ = data[:, 0:3]
@@ -609,7 +609,7 @@ class Tether(Evaluator):
 
     def force(self, samples=None, twoD=False):
         """
-        Magnitude of the force in nN acting on the tethered molecule (1D
+        Magnitude of the force in N acting on the tethered molecule (1D
         numpy.ndarray).
         """
         # Get force (in a fast way)
@@ -659,7 +659,7 @@ class Tether(Evaluator):
 
     def extension(self, samples=None, twoD=False):
         """
-        Extension of the tethered molecule in µm.
+        Extension of the tethered molecule in m.
         """
         calibration = self.calibration
 
@@ -669,7 +669,7 @@ class Tether(Evaluator):
 
     def force_extension(self, samples=None, twoD=False):
         """
-        Extension (µm, first column) of and force (nN, second column) acting
+        Extension (m, first column) of and force (N, second column) acting
         on the tethered molecule (2D numpy.ndarray).
         """
         # Get extension and force (in a fast way)
@@ -771,7 +771,7 @@ XYZ = hp.slicify([X, Y, Z])
 
 def displacementXYZ(calibration, psdXYZ, positionZ):
     """
-    Displacement in µm with height dependent calibration factors for X, Y
+    Displacement in m with height dependent calibration factors for X, Y
     and Z.
     """
     dispXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)

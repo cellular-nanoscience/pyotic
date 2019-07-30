@@ -21,22 +21,22 @@ class CalibrationSource(persistent.Persistent):
         stokes drag coefficient far in the solution).
     dsurf : float
         The value of positionZ, where the center of the bead would be on the
-        surface.
+        surface (m).
     beta : numpy.ndarray(n)
         The displacement sensitivity at the position, where the center of the
-        bead would be on the surface (nm/mV).
+        bead would be on the surface (m/V).
     kappa : numpy.ndarray(n)
         The stiffness at the position, where the center of the bead would be on
-        the surface (pN/nm).
+        the surface (N/m).
     mbeta : numpy.ndarray(n)
         The slope of the displacement sensitivity in units of
         beadcenter-surface distance (i.e. focalshift corrected units of
-        positionZ, nm/mV/µm).
+        positionZ, m/V/m).
     mkappa : numpy.ndarray(n)
         The slope of the stiffness in units of beadcenter-surface distance
         (i.e. focalshift corrected units of positionZ).
     radiusspec : float
-        The radius, as it was specified by the manufacturer (µm).
+        The radius, as it was specified by the manufacturer (m).
     focalshift : float
         The focalshift of the Setup.
     """
@@ -50,27 +50,27 @@ class CalibrationSource(persistent.Persistent):
         ----------
         beta : tuple or array (n)
             The displacement sensitivity at the position, where the center of
-            the bead would be on the surface (nm/mV).
+            the bead would be on the surface (m/V).
         kappa : tuple or array (n)
             The stiffness at the position, where the center of the bead would
-            be on the surface (pN/nm).
+            be on the surface (N/m).
         radiusspec : float
-            The radius, as it was specified by the manufacturer (µm).
+            The radius, as it was specified by the manufacturer (m).
         focalshift : float
             The focalshift of the Setup.
         mbeta : tuple or array (n), optional
             The slope of the displacement sensitivity in units of
             beadcenter-surface distance (i.e. focalshift corrected units of
-            positionZ, nm/mV/µm), (numpy.zeros(n), default).
+            positionZ, m/V/m), (numpy.zeros(n), default).
         mkappa : tuple or array (n), optional
             The slope of the stiffness in units of beadcenter-surface distance
-            (i.e. focalshift corrected units of positionZ, pN/nm/µm),
+            (i.e. focalshift corrected units of positionZ, N/m/m),
             (numpy.zeros(n), default).
         corrfactor : float, optional
             The correction factor of the size of the bead (i.e. the relative
             stokes drag coefficient far in the solution), (1.0, default).
         dsurf : float, optional
-            The value of positionZ, where the center of the bead would have
+            The value of positionZ (m), where the center of the bead would have
             been on the surface during the calibration measurement (0.0,
             default).
         """
@@ -80,11 +80,11 @@ class CalibrationSource(persistent.Persistent):
         if beta is None:
             print("Created generic values for beta. Make sure to provide a "
                   "proper calibration, if needed.")
-            beta = [1.0, 1.0, 1.0]  # nm/mV
+            beta = [1.0, 1.0, 1.0]  # m/V
         if kappa is None:
             print("Created generic values for kappa. Make sure to provide a "
                   "proper calibration, if needed.")
-            kappa = [1.0, 1.0, 1.0]  # pN/nm
+            kappa = [1.0, 1.0, 1.0]  # N/m
         self.beta = np.array(hp.listify(beta))
         self.kappa = np.array(hp.listify(kappa))
         if mbeta is None:

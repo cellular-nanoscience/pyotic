@@ -32,6 +32,10 @@ class Traces(object):
                                for a, traces
                                in cfg['aliases'].items()}
 
+        self._FACTOR = {t: float(f)
+                        for t, f
+                        in cfg['factor'].items()}
+
         self._COLOR = {t: c
                        for t, c
                        in cfg['color'].items()}
@@ -68,6 +72,14 @@ class Traces(object):
                       if not (trace in seen or seen_add(trace))]
 
         return traces
+
+    def factor(self, trace):
+        if trace in self._FACTOR:
+            return self._FACTOR[trace]
+        elif 'DEFAULT' in self._FACTOR:
+            return self._FACTOR['DEFAULT']
+        else:
+            return 1
 
     def label(self, trace):
         if trace in self._LABEL:

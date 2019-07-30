@@ -20,7 +20,7 @@ def get_excited_signal(signals):
 
 
 def get_excited_sections(signals, resolution, compare_time=0.01,
-                         threshold=0.005, min_duration=0.2, validate=True):
+                         threshold=5e-9, min_duration=0.2, validate=True):
     """
     Determine the indices (segments or range), where the first signal has a
     greater amplitude than the second signal.
@@ -116,7 +116,7 @@ def contains_greater_segment(x_segments, y_segments):
     return max_x > max_y
 
 
-def greatest_amplitude(signals, size, threshold=0.005):
+def greatest_amplitude(signals, size, threshold=5e-9):
     """
     Return 1D array with indices of the signal with the greatest amplitude.
     If signals.ndim == 1 or signals.shape[1] == 1 returns an array of boolean
@@ -158,7 +158,7 @@ def greatest_amplitude(signals, size, threshold=0.005):
     return greatest
 
 
-def greater_amplitude(signals, size, threshold=0.005):
+def greater_amplitude(signals, size, threshold=5e-9):
     """
     Determine, where a signal has a greater amplitude than a given threshold,
     or alternatively, if given, other signals.

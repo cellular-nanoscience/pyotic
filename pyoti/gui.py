@@ -153,7 +153,8 @@ class GRS(object):
 
         # plot traces
         for i, trace in enumerate(traces):
-            ax[trace].plot(timevector[::decimate], data[:, i][::decimate],
+            ax[trace].plot(timevector[::decimate],
+                           data[:, i][::decimate] * tc.factor(trace),
                            tc.color(trace))
             ax[trace].set_ylabel(tc.label(trace))
             ax[trace].ticklabel_format(useOffset=False)
@@ -220,8 +221,9 @@ class GRS(object):
 
         # plot traces
         for i, trace in enumerate(traces):
-            ax[trace].lines[0].set_data(timevector[::decimate],
-                                        data[:, i][::decimate])
+            ax[trace].lines[0].set_data(
+                timevector[::decimate],
+                data[:, i][::decimate] * tc.factor(trace))
             ax[trace].set_xlim(*xlim)
 
         self.ifigure.canvas.draw()

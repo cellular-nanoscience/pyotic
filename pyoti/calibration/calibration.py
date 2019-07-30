@@ -78,7 +78,7 @@ class Calibration(GraphMember, persistent.Persistent):
         Give the slope (m) and intercept (y_0) of the positionZ dependent
         displacement sensitivity.
         See also intercept and slope for explanation.
-        In (nm/mV)
+        In (m/V)
         """
         return np.array([self.intercept('beta'), self.slope('beta')])
 
@@ -88,7 +88,7 @@ class Calibration(GraphMember, persistent.Persistent):
         Give the slope (m) and intercept (y_0) of the positionZ dependent
         stiffness.
         See also intercept and slope for explanation.
-        In (pN/nm)
+        In (N/m)
         """
         return np.array([self.intercept('kappa'), self.slope('kappa')])
 

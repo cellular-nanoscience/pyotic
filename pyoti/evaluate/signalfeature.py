@@ -171,7 +171,7 @@ class CycleSectioner(SignalFeature):
     respectively.
     """
     def __init__(self, signals, resolution, compare_time=0.01,
-                 threshold=0.005, min_duration=0.2, highest_frequency=1,
+                 threshold=5e-9, min_duration=0.2, highest_frequency=1,
                  reduce_false_extrema=False, **kwargs):
         """
         Parameters

@@ -126,10 +126,10 @@ class IRotation(GraphicalMod):
             l_line = self._lines['left' + plot]
             r_line = self._lines['right' + plot]
 
-            l_line.set_data(self.leftextension * 1000,
-                            self.leftforce[plot] * 1000)
-            r_line.set_data(self.rightextension * 1000,
-                            self.rightforce[plot] * 1000)
+            l_line.set_data(self.leftextension * 1e9,
+                            self.leftforce[plot] * 1e12)
+            r_line.set_data(self.rightextension * 1e9,
+                            self.rightforce[plot] * 1e12)
             # recompute ax.dataLim
             l_line.axes.relim()
             # update ax.viewLim using new dataLim
@@ -257,7 +257,7 @@ class Rotation(Modification):
                             value=0.0)
 
         # Parameters for rotation matrix calculation
-        self.rotation_method = 'nm'  # 'pN', 'nm' or 'V'
+        self.rotation_method = 'm'  # 'N', 'm' or 'V'
 
     def _print_info(self):
         print(("    Rotation is in '%s' space" % self.rotation_method))
@@ -412,16 +412,16 @@ class Rotation(Modification):
         if positionZ.ndim < 2:
             positionZ = positionZ[:, np.newaxis]
 
-        # rotation in nm space
-        if self.rotation_method == 'nm':
-            # beta in nm/mV, displacement sensitivity
+        # rotation in m space
+        if self.rotation_method == 'm':
+            # beta in m/V, displacement sensitivity
             beta = calibration.beta(positionZ)[:, 0:3]
             factor = beta
         # rotation in pN space
-        elif self.rotation_method == 'pN':
-            # beta in nm/mV, displacement sensitivity
+        elif self.rotation_method == 'N':
+            # beta in m/V, displacement sensitivity
             beta = calibration.beta(positionZ)[:, 0:3]
-            # pN/nm, stiffness
+            # N/m, stiffness
             kappa = calibration.kappa(positionZ)[:, 0:3]
             factor = kappa * beta
         else:
@@ -433,9 +433,9 @@ class Rotation(Modification):
     def rot_factor(self, a, b, calibration_factor):
         """
         Calculates a weighting factor for rotating the 3D QPD signal in V via
-        the signal in pN (stiffness * displacement_sensitivity), nm
+        the signal in N (stiffness * displacement_sensitivity), m
         (displacement_sensitivity), or V space.
-        (If you rotate a vector in pN space, the absolute value (force) should
+        (If you rotate a vector in N space, the absolute value (force) should
         stay the same, regardless of the axis. A rotation in V space would lead
         to bias, due to the different displacement sensitivities and
         stiffnesses of all three axes.)
@@ -443,7 +443,7 @@ class Rotation(Modification):
         view, this modification is applied to.
         """
         cf = calibration_factor
-        if self.rotation_method == 'nm' or self.rotation_method == 'pN':
+        if self.rotation_method == 'm' or self.rotation_method == 'N':
             factor = cf[:, a] / cf[:, b]
         else:
             factor = 1.0

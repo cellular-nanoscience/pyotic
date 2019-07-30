@@ -595,6 +595,41 @@ def _update_db(experiment, old_version, new_version):
                     # Update calibsource (directly referency by a calibration)
                     obj.calibration._p_changed = True
 
+        # Update to 0.14.0
+        # change to SI units
+        if old_version < comp('0.14.0'):
+            import pyoti
+            for record in experiment.records():
+                record._conversion[record.traces_to_idx('positionXYZ')] *= 1e-6
+                if 'mirrorX' in record.traces:
+                    record._conversion[record.traces_to_idx('mirrorX')] *= 1e-6
+                if 'mirrorY' in record.traces:
+                    record._conversion[record.traces_to_idx('mirrorY')] *= 1e-6
+                record._p_changed = True
+                calibsource = record.calibration.calibsource
+                calibsource.beta *= 1e-6  # nm/mV -> m/V
+                #calibsource.mbeta *= 1  # nm/mV/µm -> m/V/m
+                calibsource.kappa *= 1e-3  # pN/nm -> N/m
+                calibsource.mkappa *= 1e3  # pN/nm/µm -> N/m/m
+                calibsource.dsurf *= 1e-6  # µm -> m
+                calibsource.radiusspec *= 1e-6  # µm -> m
+            for mod in experiment.modifications():
+                class_name \
+                    = ''.join((mod.__module__, '.', mod.__class__.__name__))
+                if class_name \
+                        == 'pyoti.plugins.modifications.touchdown.Touchdown':
+                    mod.iattributes.touchdown *= 1e-6
+                    mod.iattributes._widgets['touchdown'].description = 'Touchdown (m)'
+                if class_name \
+                        == 'pyoti.plugins.modifications.attachment.Attachment':
+                    mod.iattributes.offsetStage *= 1e-6
+                    mod.iattributes._widgets['offsetStage'].description = 'Offset position (m)'
+                if class_name \
+                        == 'pyoti.plugins.modifications.rotation.Rotation':
+                    # Update rotation method from nm to m
+                    mod.rotation_method = 'm'
+
+
         # Update to X.Y.Z
         # if old_version < comp('X.Y.Z'):
             # for record in experiment.records():

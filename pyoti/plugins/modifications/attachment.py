@@ -45,7 +45,7 @@ class IAttachment(GraphicalMod):
         action  = [ 'left',  'right', 'lleft', 'rright', 'up',    'down'  ]
         label   = [ '<',     '>',     '<<',    '>>',     'up',    'down'  ]
         offsetP = [  0.0,     0.0,     0.0,     0.0,     -0.0025,  0.0025 ]
-        offsetS = [  0.0025, -0.0025,  0.025,  -0.025,    0.0,     0.0    ]
+        offsetS = [  2.5e-9, -2.5e-9,  25e-9,  -25e-9,    0.0,     0.0    ]
         row     = [  0,       0,       1,       1,        1,       0      ]
         column  = [  0,       2,       0,       2,        1,       1      ]
         self.action  = action
@@ -105,8 +105,8 @@ class IAttachment(GraphicalMod):
         self.calculate_plateaus()
 
         # plot data
-        self._lines['left'].set_data(self.leftposition, self.leftpsd)
-        self._lines['right'].set_data(self.rightposition, self.rightpsd)
+        self._lines['left'].set_data(self.leftposition * 1e6, self.leftpsd)
+        self._lines['right'].set_data(self.rightposition * 1e6, self.rightpsd)
         excited_psd = self.modification.traces_apply[0]
         excited_position = self.modification.traces_apply[1]
         self._ax.set_xlabel(tc.label(excited_position))
@@ -134,8 +134,8 @@ class IAttachment(GraphicalMod):
         the plot accordingly.
         """
         # change offset and scaling for plateaus
-        self.modification.iattributes.offsetStage += self.offsetS[action]
         self.modification.iattributes.offsetPsd += self.offsetP[action]
+        self.modification.iattributes.offsetStage += self.offsetS[action]
 
         self.update_fig()
 
@@ -198,7 +198,7 @@ class Attachment(Modification):
         self.add_iattribute('offsetPsd', description='Offset PSD (V)',
                             value=0.0)
         # offset of the position relative to the attachment point of the DNA
-        self.add_iattribute('offsetStage', description='Offset position (V)',
+        self.add_iattribute('offsetStage', description='Offset position (m)',
                             value=0.0)
 
     def _print_info(self):
