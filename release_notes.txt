@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.14.2
+ Correct errorness packaging of pip package
 ** Version 0.14.1
  Add trap_height as possible trace
 ** Version 0.14.0
