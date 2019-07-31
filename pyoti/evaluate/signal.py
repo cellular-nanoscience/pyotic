@@ -276,35 +276,66 @@ def get_contiguous_segments(plateaus, min_distance_center=1, min_length_high=1,
     def check_center_distance(idx_start, idx_stop):
         if min_distance_center == 1:
             return idx_start, idx_stop
+
+        # Create a linked list from the two arrays describing the start and
+        # stop inidices of the plateaus. This implementation avoids the (for
+        # long lists) expensive pop() function of lists.
+        class Plateau(object):
+            def __init__(self, start, stop, next=None):
+                self.next = next
+                self._start = start
+                self._stop = stop
+                self.center = start + (stop - start) / 2
+            @property
+            def start(self):
+                return self._start
+            @start.setter
+            def start(self, start):
+                self._start = start
+                self.center = self.start + (self.stop - self.start) / 2
+            @property
+            def stop(self):
+                return self._stop
+            @stop.setter
+            def stop(self, stop):
+                self._stop = stop
+                self.center = self.start + (self.stop - self.start) / 2
+        current = Plateau(idx_start[-1], idx_stop[-1])
+        for start, stop in zip(idx_start[-2::-1], idx_stop[-2::-1]):
+            current = Plateau(start, stop, current)
+        first = current
+
         # Iteratively check distance of the center of one plateau (start, stop)
         # to the following one, and either fuse them or delete the next one, if
         # the distance is too small
-        center = (idx_start + (idx_stop - idx_start) / 2).tolist()
-        start = idx_start.tolist()
-        stop = idx_stop.tolist()
-        i = 0
-        num_plateaus = len(center)
-        while i < num_plateaus - 1:
-            if center[i + 1] - center[i] < min_distance_center:
+        num_plateaus = len(idx_start)
+        while current.next is not None:
+            if current.next.center - current.center < min_distance_center:
                 if fuse:
                     # Correct the stop of the leading plateau to be the one
-                    # of the following
-                    stop[i] = stop[i + 1]
-                    # Correct the center position of the now bigger leading
-                    # plateau
-                    center[i] = start[i] + (stop[i] - start[i]) / 2
+                    # of the following and implicitly correct the center
+                    # position of the now bigger leading plateau
+                    current.stop = current.next.stop
                 # Delete the following plateau and its corresponding center
-                start.pop(i + 1)
-                stop.pop(i + 1)
-                center.pop(i + 1)
-
-                # Correct number for deleted plateau and go back one step to
-                # check also the distance of the current plateau to the plateau
-                # after the next one (now the next one)
+                current.next = current.next.next
+                # Correct number for deleted plateau
                 num_plateaus -= 1
-                i -= 1
+            else:
+                # select the next plateau
+                current = current.next
+
+        # Create numpy arrays from linked list
+        start = np.empty(num_plateaus)
+        stop = np.empty(num_plateaus)
+        current = first
+        i = 0
+        while current is not None:
+            start[i] = current.start
+            stop[i] = current.stop
+            current = current.next
             i += 1
-        return np.array(start), np.array(stop)
+
+        return start, stop
 
     def check_length_high(idx_start, idx_stop):
         if min_length_high == 1:
