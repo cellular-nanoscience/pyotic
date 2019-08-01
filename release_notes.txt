@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.14.4
+ Correct calibration factor conversion for cellnano calibration
 ** Version 0.14.3
  Correct errornes packaging
 ** Version 0.14.2
