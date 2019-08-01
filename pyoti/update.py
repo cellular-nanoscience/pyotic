@@ -607,8 +607,8 @@ def _update_db(experiment, old_version, new_version):
                     record._conversion[record.traces_to_idx('mirrorY')] *= 1e-6
                 record._p_changed = True
                 calibsource = record.calibration.calibsource
-                calibsource.beta *= 1e-9  # nm/V -> m/V
-                calibsource.mbeta *= 1e-3  # nm/V/µm -> m/V/m
+                calibsource.beta *= 1e-6  # nm/mV -> m/V
+                #calibsource.mbeta *= 1  # nm/mV/µm -> m/V/m
                 calibsource.kappa *= 1e-3  # pN/nm -> N/m
                 calibsource.mkappa *= 1e3  # pN/nm/µm -> N/m/m
                 calibsource.dsurf *= 1e-6  # µm -> m
