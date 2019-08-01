@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.14.5
+ Correct errornes calibration factor correction in database update function
 ** Version 0.14.4
  Correct calibration factor conversion for cellnano calibration
 ** Version 0.14.3
