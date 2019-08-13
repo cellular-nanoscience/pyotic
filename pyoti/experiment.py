@@ -1987,12 +1987,15 @@ class Experiment(object):
                             self.__class__.__name__, '>'])
 
 
-def create_experiment(**kwargs):
+def create_experiment(return_last_created=True, **kwargs):
     """
     Create a new Experiment or get the last created one.
 
     Parameters
     ----------
+    return_last_created : bool
+        If an experiment was already created in the python kernel instance,
+        return that experiment instead of creating a new one.
     **kwargs
         Parameters for the initialization of an instance of Experiment().
 
@@ -2001,10 +2004,14 @@ def create_experiment(**kwargs):
     Experiment
         The new or the last created Experiment.
     """
-    return Experiment.created_last or Experiment(**kwargs)
+    if return_last_created:
+        return Experiment.created_last or Experiment(**kwargs)
+    else:
+        return Experiment(**kwargs)
 
 
-def open_experiment(filename=None, directory=None, **kwargs):
+def open_experiment(filename=None, directory=None, return_last_created=True,
+                    **kwargs):
     """
     Create a new Experiment or get the last created one.
     Optionally, open an experiment file `filename'.
@@ -2017,6 +2024,9 @@ def open_experiment(filename=None, directory=None, **kwargs):
         If `filename` alone is not sufficient to describe the location of the
         experiment file, you can provide a `directory`, where the path of
         `filename` is located in.
+    return_last_created : bool
+        If an experiment was already created in the python kernel instance,
+        return that experiment instead of creating a new one.
     **kwargs
         Parameters for the initialization of an instance of Experiment().
 
@@ -2025,7 +2035,8 @@ def open_experiment(filename=None, directory=None, **kwargs):
     Experiment
         The Experiment with the opened file.
     """
-    experiment = create_experiment(**kwargs)
+    experiment = create_experiment(return_last_created=return_last_created,
+                                   **kwargs)
     experiment.open(filename=filename, directory=directory)
     return experiment
 
