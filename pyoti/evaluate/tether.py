@@ -808,9 +808,10 @@ def force(forceXYZ, positionXY):
     signF[:, XY] = - np.sign(forceXYZ[:, XY]) * np.sign(positionXY)
 
     # square the forces and account for the signs
-    force_sq = forceXYZ**2 * signF
+    force_sq = forceXYZ**2
     forceSUM = np.sum(force_sq, axis=1)
-    force = np.sqrt(np.abs(forceSUM)) * np.sign(forceSUM)
+    signSUM = np.sign(np.sum(force_sq * signF, axis=1))
+    force = np.sqrt(np.abs(forceSUM)) * signSUM
     return force
 
 
@@ -909,9 +910,10 @@ def distance(distanceXYZ, positionXY):
     signD[:, XY] = - np.sign(distanceXYZ[:, XY]) * np.sign(positionXY)
 
     # square the distances and account for the signs
-    distance_sq = distanceXYZ**2 * signD
+    distance_sq = distanceXYZ**2
     distSUM = np.sum(distance_sq, axis=1)
-    return np.sqrt(np.abs(distSUM)) * np.sign(distSUM)
+    signSUM = np.sign(np.sum(distance_sq * signD, axis=1))
+    return np.sqrt(np.abs(distSUM)) * signSUM
 
 
 def extension(distance, radius):
