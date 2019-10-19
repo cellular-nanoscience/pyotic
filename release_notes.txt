@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.14.6
+ Improve sign calculation of force and distance in object tether
 ** Version 0.14.5
  Correct errornes calibration factor correction in database update function
 ** Version 0.14.4
