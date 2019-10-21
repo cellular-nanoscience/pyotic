@@ -769,7 +769,7 @@ YZ = hp.slicify([Y, Z])
 XYZ = hp.slicify([X, Y, Z])
 
 
-def displacementXYZ(calibration, psdXYZ, positionZ):
+def displacementXYZ(calibration, psdXYZ, positionZ=0.0):
     """
     Displacement in m with height dependent calibration factors for X, Y
     and Z.
