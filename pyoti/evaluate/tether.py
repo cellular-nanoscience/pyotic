@@ -468,7 +468,7 @@ class Tether(Evaluator):
         return fig
 
     def force_extension_pair(self, i, axis=None, direction=None, decimate=None,
-                             time=False, twoD=False):
+                             time=False, twoD=False, posmin=10e-9):
         """
         Calculate the force extension pair with index `i`.
 
@@ -504,11 +504,12 @@ class Tether(Evaluator):
         """
         fe_pair = self.force_extension_pairs(axis=axis, direction=direction,
                                              i=i, decimate=decimate, time=time,
-                                             twoD=twoD)
+                                             twoD=twoD, posmin=posmin)
         return next(fe_pair)
 
     def force_extension_pairs(self, axis=None, direction=None, i=None,
-                              decimate=None, time=False, twoD=False):
+                              decimate=None, time=False, twoD=False,
+                              posmin=10e-9):
         """
         Return a generator for force extension values of stress release pairs.
 
@@ -558,7 +559,7 @@ class Tether(Evaluator):
         samples = slice(start, stop)
 
         # Get extension, force, and stress/release pairs
-        e_f = self.force_extension(samples=samples, twoD=twoD)  # m,N
+        e_f = self.force_extension(samples=samples, twoD=twoD, posmin=posmin)  # m,N
         e = e_f[:, 0]
         f = e_f[:, 1]
 
@@ -607,7 +608,7 @@ class Tether(Evaluator):
         fXYZ = forceXYZ(calibration, psdXYZ, positionZ)
         return fXYZ
 
-    def force(self, samples=None, twoD=False):
+    def force(self, samples=None, twoD=False, posmin=10e-9):
         """
         Magnitude of the force in N acting on the tethered molecule (1D
         numpy.ndarray).
@@ -624,7 +625,7 @@ class Tether(Evaluator):
             psdXYZ[:, Z] = 0.0
 
         fXYZ = forceXYZ(calibration, psdXYZ, positionZ)
-        f = force(fXYZ, positionXY)
+        f = force(fXYZ, positionXY, posmin=posmin)
         return f
 
     def distanceXYZ(self, samples=None):
@@ -667,7 +668,7 @@ class Tether(Evaluator):
         e = extension(dist, calibration.radius)
         return e
 
-    def force_extension(self, samples=None, twoD=False):
+    def force_extension(self, samples=None, twoD=False, posmin=10e-9):
         """
         Extension (m, first column) of and force (N, second column) acting
         on the tethered molecule (2D numpy.ndarray).
@@ -688,7 +689,7 @@ class Tether(Evaluator):
         e = extension(dist, calibration.radius)
 
         fXYZ = forceXYZ(calibration, psdXYZ, positionZ)
-        f = force(fXYZ, positionXY)
+        f = force(fXYZ, positionXY, posmin=posmin)
         return np.c_[e, f]
 
     @property
@@ -808,6 +809,8 @@ def force(forceXYZ, positionXY, posmin=10e-9):
         Smaller values could (depending on the number of datapoints) possibly
         lead to falsly detected excitation of the signal.
     """
+    if posmin is None:
+        posmin = 0
     # The sign of the magnitude, i.e. the direction of the force is important
     # for the noise around +/- 0 N.
     # The sign of the magnitude of the forceXY depends on the positionXY. If we
