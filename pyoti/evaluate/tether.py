@@ -640,7 +640,7 @@ class Tether(Evaluator):
         distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ)
         return distXYZ
 
-    def distance(self, samples=None, twoD=False):
+    def distance(self, samples=None, twoD=False, posmin=10e-9):
         """
         Distance of the attachment point to the bead center.
         """
@@ -655,16 +655,16 @@ class Tether(Evaluator):
             psdXYZ[:, Z] = 0.0
 
         distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ)
-        dist = distance(distXYZ, positionXY)
+        dist = distance(distXYZ, positionXY, posmin=posmin)
         return dist
 
-    def extension(self, samples=None, twoD=False):
+    def extension(self, samples=None, twoD=False, posmin=10e-9):
         """
         Extension of the tethered molecule in m.
         """
         calibration = self.calibration
 
-        dist = self.distance(samples=samples, twoD=twoD)
+        dist = self.distance(samples=samples, twoD=twoD, posmin=posmin)
         e = extension(dist, calibration.radius)
         return e
 
@@ -685,7 +685,7 @@ class Tether(Evaluator):
         if twoD:
             psdXYZ[:, Z] = 0.0
         distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ)
-        dist = distance(distXYZ, positionXY)
+        dist = distance(distXYZ, positionXY, posmin=posmin)
         e = extension(dist, calibration.radius)
 
         fXYZ = forceXYZ(calibration, psdXYZ, positionZ)
@@ -915,7 +915,7 @@ def distanceXYZ(calibration, psdXYZ, positionXYZ, radius=None, focalshift=None,
     return distanceXYZ
 
 
-def distance(distanceXYZ, positionXY):
+def distance(distanceXYZ, positionXY, posmin=10e-9):
     """
     Calculate the distance of the attachment point to the bead center.
 
@@ -924,18 +924,31 @@ def distance(distanceXYZ, positionXY):
     distanceXYZ : 2D numpy.ndarray of type float
         distanceXYZ.shape[1] can consist of either 3 (XYZ) or 2 (XY) axes
     """
-    # sign of distanceXY depends on positionXY, important for noise of dist
-    # around +/- 0
-    # distanceZ negative/positive, irrespective of positionZ!
-    # distanceXY is pointing in the opposite direction of positionXY
+    if posmin is None:
+        posmin = 0
+    # The sign of the magnitude, i.e. the direction of the distance is
+    # important for the noise around +/- 0 N.
+    # The sign of the magnitude of the distanceXY depends on the positionXY. If
+    # we pull the bead to one side and the bead is displaced to the same side,
+    # we get a positive magnitude of the distance. If the bead is displaced to
+    # the opposite side of the one we are pulling to, we get a negative
+    # magnitude of the distance. Keep in mind that a positive displacement
+    # results in an opposite directed pointing distance. The sign of the
+    # magnitude of the distanceZ is independent of the positionZ.
     signD = np.sign(distanceXYZ)
-    signD[:, XY] = - np.sign(distanceXYZ[:, XY]) * np.sign(positionXY)
+    # The position determines the direction of the force only of the axes where
+    # we actively pull on the bead
+    posmax = np.max(np.abs(positionXY), axis=0)
+    idx = posmax >= posmin
+    signD[:, XY][:, idx] *= - np.sign(positionXY[:, idx])
 
-    # square the distances and account for the signs
+    # Square the distances and account for the signs
     distance_sq = distanceXYZ**2
-    distSUM = np.sum(distance_sq, axis=1)
-    signSUM = np.sign(np.sum(distance_sq * signD, axis=1))
-    return np.sqrt(np.abs(distSUM)) * signSUM
+    # Calculate a "weighted" sign. Greater distances have greater influence on
+    # the final sign
+    dist_sq_sum = np.sum(distance_sq, axis=1)
+    sign_dist_sum = np.sign(np.sum(distance_sq * signD, axis=1))
+    return np.sqrt(dist_sq_sum) * sign_dist_sum
 
 
 def extension(distance, radius):
