@@ -785,33 +785,52 @@ def forceXYZ(calibration, psdXYZ, positionZ):
     displacementXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
     fXYZ = calibration.force(displacementXYZ, positionZ=positionZ)
 
-    # Negative/positive displacemnet on the bead results in a
-    # positive/negative force in the opposite direction
+    # A displacement of the bead in the positive (negative) direction results
+    # in a force acting on the bead in the opposite negative (positive)
+    # direction.
     fXYZ *= - 1.0
 
     return fXYZ
 
 
-def force(forceXYZ, positionXY):
+def force(forceXYZ, positionXY, posmin=10e-9):
     """
-    Magnitude of the force.
-
     Parameters
     ----------
     forceXYZ : 2D numpy.ndarray of type float
         forceXYZ.shape[1] can consist of either 3 (XYZ) or 2 (XY) axes
+    posmin : float
+        The `posmin` is used to decide wether the magnitude of the force has to
+        be corrected with the sign depending on the position. The `posmin` sets
+        the value the position signal has to be deflected at least to be
+        counted as active pulling on the bead. The value should at least be >=
+        12 times the standard deviation of the unexcited position signal.
+        Smaller values could (depending on the number of datapoints) possibly
+        lead to falsly detected excitation of the signal.
     """
-    # sign of forceXY depends on positionXY, important for noise of force
-    # around +/- 0
-    # forceZ negative/positive, irrespective of positionZ!
+    # The sign of the magnitude, i.e. the direction of the force is important
+    # for the noise around +/- 0 N.
+    # The sign of the magnitude of the forceXY depends on the positionXY. If we
+    # pull the bead to one side and the bead is displaced to the same side, we
+    # get a positive magnitude of the force. If the bead is displaced to the
+    # opposite side of the one we are pulling to, we get a negative magnitude
+    # of the force. Keep in mind that a positive displacement results in an
+    # opposite directed negative force acting on the bead and vice versa. The
+    # sign of the magnitude of the forceZ is independent of the positionZ.
     signF = np.sign(forceXYZ)
-    signF[:, XY] = - np.sign(forceXYZ[:, XY]) * np.sign(positionXY)
+    # The position determines the direction of the force only of the axes where
+    # we actively pull on the bead
+    posmax = np.max(np.abs(positionXY), axis=0)
+    idx = posmax >= posmin
+    signF[:, XY][:, idx] *= - np.sign(positionXY[:, idx])
 
-    # square the forces and account for the signs
+    # Square the forces and account for the signs
     force_sq = forceXYZ**2
-    forceSUM = np.sum(force_sq, axis=1)
-    signSUM = np.sign(np.sum(force_sq * signF, axis=1))
-    force = np.sqrt(np.abs(forceSUM)) * signSUM
+    force_sq_sum = np.sum(force_sq, axis=1)
+    # Calculate a "weighted" sign. Greater forces have greater influence on the
+    # final sign
+    sign_force_sum = np.sign(np.sum(force_sq * signF, axis=1))
+    force = np.sqrt(force_sq_sum) * sign_force_sum
     return force
 
 
