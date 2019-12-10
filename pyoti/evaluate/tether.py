@@ -692,6 +692,11 @@ class Tether(Evaluator):
         f = force(fXYZ, positionXY, posmin=posmin)
         return np.c_[e, f]
 
+
+    def info(self, i=0):
+        print_info(self, i=i)
+
+
     @property
     def angle(self):
         """
@@ -758,6 +763,38 @@ class Tether(Evaluator):
     @property
     def releases(self):
         return self.sections(cycle='release')
+
+
+def print_info(tether, i=0):
+    stress_release_pair = tether.stress_release_pairs(i=i, info=True)
+    stress, release, stress_info, release_info = stress_release_pair
+    resolution = tether.resolution
+    start_stress_t = stress[0].start / resolution
+    stop_stress_t = stress[0].stop / resolution
+    start_release_t = release[0].start / resolution
+    stop_release_t = release[0].stop / resolution
+    print("Stress release pair: #{:03d}".format(i))
+    print("Focal shift: {:.3f}".format(tether.calibration.focalshift))
+    print("Axis: {}".format(stress_info[0][0]))
+    print("  stress")
+    print("    t:  {:.3f} s".format(stop_stress_t - start_stress_t))
+    print("        {:.2f} s - {:.2f} s".format(start_stress_t, stop_stress_t))
+    print("    datapoints: {}".format(stress[0].stop - stress[0].start))
+    print("    z0: {:.2f} nm".format(
+        - np.median(tether.get_data('positionZ', stress[0])) * 1e9))
+    print("    h0: {:.2f} nm".format(
+        - np.median(tether.get_data('positionZ', stress[0])) * 1e9
+                                    * tether.calibration.focalshift))
+    print("  release")
+    print("    t:  {:.3f} s".format(stop_release_t - start_release_t))
+    print("        {:.2f} s - {:.2f} s".format(start_release_t,
+                                               stop_release_t))
+    print("    datapoints: {}".format(release[0].stop - release[0].start))
+    print("    z0: {:.2f} nm".format(
+        - np.median(tether.get_data('positionZ', release[0])) * 1e9))
+    print("    h0: {:.2f} nm".format(
+        - np.median(tether.get_data('positionZ', release[0])) * 1e9
+                                    * tether.calibration.focalshift))
 
 
 # Define constants for convenient handling
