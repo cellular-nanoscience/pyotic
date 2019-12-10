@@ -194,6 +194,9 @@ class Region(GraphMember, metaclass=ABCMeta):
         traces_idx = self.traces_to_idx(traces)
         samples = self.samples_idx(samples, decimate)
 
+        if time:
+            timevector = self.timevector[samples]
+
         if window <= 1:
             # Return unfiltered data
             data = self._get_data(samples, traces_idx, copy)
@@ -230,7 +233,7 @@ class Region(GraphMember, metaclass=ABCMeta):
                                 columns=self.idx_to_traces(traces_idx))
 
         if time:
-            return np.c_[self.timevector[samples], data]
+            return np.c_[timevector, data]
 
         return data
 
@@ -443,7 +446,7 @@ class Region(GraphMember, metaclass=ABCMeta):
 
 
 def _moving_filter(data, window, moving_filter='mean', mode='reflect', cval=0.0,
-                  origin=0):
+                   origin=0):
     """
     Apply a moving filter to data.
 
