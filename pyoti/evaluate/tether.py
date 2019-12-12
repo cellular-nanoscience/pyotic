@@ -588,21 +588,30 @@ class Tether(Evaluator):
 
         Parameters
         ----------
-        cycle : int or str
-            cycle can be either 'stress' or 'release' (0 or 1)
+        cycle : str or list of str
+            cycle can be either 'stress' or 'release'
         """
         if cycle is None:
-            cycle = 'stress'
-        cycles = {'stress': 0, 'release': 1}
-        cycle = cycles.get(cycle, cycle)
+            cycle = ['stress', 'release']
+        if 'stress' in cycle and not 'release' in cycle:  # stress only
+            start = 0
+            stop = 0
+        elif 'release' in cycle and not 'stress' in cycle:  # release only
+            start = 1
+            stop = 1
+        else:  # stress and release
+            start = 0
+            stop = 1
 
         str_rls_pair = self.stress_release_pairs(axis=axis,
                                                  direction=direction,
                                                  i=i,
                                                  decimate=decimate,
-                                                 slices=True,
+                                                 slices=False,
                                                  info=False)
-        idx = str_rls_pair[cycle][0]
+        idx_start = str_rls_pair[start][0][0]
+        idx_stop = str_rls_pair[stop][0][1]
+        idx = slice(idx_start, idx_stop, decimate)
         return idx
 
     def displacementXYZ(self, samples=None):
