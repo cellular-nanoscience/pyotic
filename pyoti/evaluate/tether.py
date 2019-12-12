@@ -582,6 +582,29 @@ class Tether(Evaluator):
             else:
                 yield est, fst, sti, erl, frl, rli
 
+    def samples(self, i, cycle=None, axis=None, direction=None, decimate=None):
+        """
+        Get index of samples to be used for functions displacement, force, etc.
+
+        Parameters
+        ----------
+        cycle : int or str
+            cycle can be either 'stress' or 'release' (0 or 1)
+        """
+        if cycle is None:
+            cycle = 'stress'
+        cycles = {'stress': 0, 'release': 1}
+        cycle = cycles.get(cycle, cycle)
+
+        str_rls_pair = self.stress_release_pairs(axis=axis,
+                                                 direction=direction,
+                                                 i=i,
+                                                 decimate=decimate,
+                                                 slices=True,
+                                                 info=False)
+        idx = str_rls_pair[cycle][0]
+        return idx
+
     def displacementXYZ(self, samples=None):
         """
         Displacement in m with height dependent calibration factors for X, Y
@@ -692,10 +715,8 @@ class Tether(Evaluator):
         f = force(fXYZ, positionXY, posmin=posmin)
         return np.c_[e, f]
 
-
     def info(self, i=0):
         print_info(self, i=i)
-
 
     @property
     def angle(self):
@@ -765,6 +786,16 @@ class Tether(Evaluator):
         return self.sections(cycle='release')
 
 
+# Define constants for convenient handling
+X = 0
+Y = 1
+Z = 2
+XY = hp.slicify([X, Y])
+XZ = hp.slicify([X, Z])
+YZ = hp.slicify([Y, Z])
+XYZ = hp.slicify([X, Y, Z])
+
+
 def print_info(tether, i=0):
     stress_release_pair = tether.stress_release_pairs(i=i, info=True)
     stress, release, stress_info, release_info = stress_release_pair
@@ -795,16 +826,6 @@ def print_info(tether, i=0):
     print("    h0: {:.2f} nm".format(
         - np.median(tether.get_data('positionZ', release[0])) * 1e9
                                     * tether.calibration.focalshift))
-
-
-# Define constants for convenient handling
-X = 0
-Y = 1
-Z = 2
-XY = hp.slicify([X, Y])
-XZ = hp.slicify([X, Z])
-YZ = hp.slicify([Y, Z])
-XYZ = hp.slicify([X, Y, Z])
 
 
 def displacementXYZ(calibration, psdXYZ, positionZ=0.0):
