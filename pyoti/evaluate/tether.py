@@ -482,6 +482,15 @@ class Tether(Evaluator):
             See method `self.stress_release_pairs()`.
         decimate : int
             See method `self.stress_release_pairs()`.
+        posmin : float
+            The `posmin` is used to decide wether the magnitude of the force
+            has to be corrected with the sign depending on the position. The
+            `posmin` sets the value the position signal has to be deflected at
+            least to be counted as active pulling on the bead. The value should
+            at least be >= 12 times the standard deviation of the unexcited
+            position signal.
+            Smaller values could (depending on the number of datapoints)
+            possibly lead to falsly detected excitation of the signal.
 
         Returns
         -------
@@ -524,6 +533,15 @@ class Tether(Evaluator):
             Index of the force extension pair to be yielded.
         decimate : int, optional
             See method `seld.stress_release_pairs()`.
+        posmin : float
+            The `posmin` is used to decide wether the magnitude of the force
+            has to be corrected with the sign depending on the position. The
+            `posmin` sets the value the position signal has to be deflected at
+            least to be counted as active pulling on the bead. The value should
+            at least be >= 12 times the standard deviation of the unexcited
+            position signal.
+            Smaller values could (depending on the number of datapoints)
+            possibly lead to falsly detected excitation of the signal.
 
         Yields
         ------
@@ -644,6 +662,18 @@ class Tether(Evaluator):
         """
         Magnitude of the force in N acting on the tethered molecule (1D
         numpy.ndarray).
+
+        Parameters
+        ----------
+        posmin : float
+            The `posmin` is used to decide wether the magnitude of the force
+            has to be corrected with the sign depending on the position. The
+            `posmin` sets the value the position signal has to be deflected at
+            least to be counted as active pulling on the bead. The value should
+            at least be >= 12 times the standard deviation of the unexcited
+            position signal.
+            Smaller values could (depending on the number of datapoints)
+            possibly lead to falsly detected excitation of the signal.
         """
         # Get force (in a fast way)
         data = self.get_data(traces=['psdXYZ', 'positionXYZ'], samples=samples)
@@ -675,6 +705,18 @@ class Tether(Evaluator):
     def distance(self, samples=None, twoD=False, posmin=10e-9):
         """
         Distance of the attachment point to the bead center.
+
+        Parameters
+        ----------
+        posmin : float
+            The `posmin` is used to decide wether the magnitude of the force
+            has to be corrected with the sign depending on the position. The
+            `posmin` sets the value the position signal has to be deflected at
+            least to be counted as active pulling on the bead. The value should
+            at least be >= 12 times the standard deviation of the unexcited
+            position signal.
+            Smaller values could (depending on the number of datapoints)
+            possibly lead to falsly detected excitation of the signal.
         """
         data = self.get_data(traces=['psdXYZ', 'positionXYZ'], samples=samples)
         psdXYZ = data[:, 0:3]
@@ -693,6 +735,18 @@ class Tether(Evaluator):
     def extension(self, samples=None, twoD=False, posmin=10e-9):
         """
         Extension of the tethered molecule in m.
+
+        Parameters
+        ----------
+        posmin : float
+            The `posmin` is used to decide wether the magnitude of the force
+            has to be corrected with the sign depending on the position. The
+            `posmin` sets the value the position signal has to be deflected at
+            least to be counted as active pulling on the bead. The value should
+            at least be >= 12 times the standard deviation of the unexcited
+            position signal.
+            Smaller values could (depending on the number of datapoints)
+            possibly lead to falsly detected excitation of the signal.
         """
         calibration = self.calibration
 
@@ -704,6 +758,18 @@ class Tether(Evaluator):
         """
         Extension (m, first column) of and force (N, second column) acting
         on the tethered molecule (2D numpy.ndarray).
+
+        Parameters
+        ----------
+        posmin : float
+            The `posmin` is used to decide wether the magnitude of the force
+            has to be corrected with the sign depending on the position. The
+            `posmin` sets the value the position signal has to be deflected at
+            least to be counted as active pulling on the bead. The value should
+            at least be >= 12 times the standard deviation of the unexcited
+            position signal.
+            Smaller values could (depending on the number of datapoints)
+            possibly lead to falsly detected excitation of the signal.
         """
         # Get extension and force (in a fast way)
         data = self.get_data(traces=['psdXYZ', 'positionXYZ'], samples=samples)
@@ -990,6 +1056,14 @@ def distance(distanceXYZ, positionXY, posmin=10e-9):
     ----------
     distanceXYZ : 2D numpy.ndarray of type float
         distanceXYZ.shape[1] can consist of either 3 (XYZ) or 2 (XY) axes
+    posmin : float
+        The `posmin` is used to decide wether the magnitude of the force has to
+        be corrected with the sign depending on the position. The `posmin` sets
+        the value the position signal has to be deflected at least to be
+        counted as active pulling on the bead. The value should at least be >=
+        12 times the standard deviation of the unexcited position signal.
+        Smaller values could (depending on the number of datapoints) possibly
+        lead to falsly detected excitation of the signal.
     """
     if posmin is None:
         posmin = 0
