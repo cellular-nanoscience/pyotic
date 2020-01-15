@@ -1048,6 +1048,26 @@ def distanceXYZ(calibration, psdXYZ, positionXYZ, radius=None, focalshift=None,
     return distanceXYZ
 
 
+def displacement(displacementXYZ, positionXY, posmin=10e-9):
+    """
+    Calculate the displacemnet of the microsphere.
+
+    Parameters
+    ----------
+    displacementXYZ : 2D numpy.ndarray of type float
+        displacementXYZ.shape[1] can consist of either 3 (XYZ) or 2 (XY) axes
+    posmin : float
+        The `posmin` is used to decide wether the magnitude of the force has to
+        be corrected with the sign depending on the position. The `posmin` sets
+        the value the position signal has to be deflected at least to be
+        counted as active pulling on the bead. The value should at least be >=
+        12 times the standard deviation of the unexcited position signal.
+        Smaller values could (depending on the number of datapoints) possibly
+        lead to falsly detected excitation of the signal.
+    """
+    return - distance(displacementXYZ, positionXY, posmin=posmin)
+
+
 def distance(distanceXYZ, positionXY, posmin=10e-9):
     """
     Calculate the distance of the attachment point to the bead center.
