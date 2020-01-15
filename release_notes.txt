@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.15.0
+ Fix issues with HeightCalibration due to upstream update of scipy/numpy and add/improve functionality of PyOTI.
 ** Version 0.14.6
  Improve sign calculation of force and distance in object tether
 ** Version 0.14.5
