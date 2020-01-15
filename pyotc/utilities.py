@@ -13,8 +13,8 @@ from inspect import getargspec
 
 from lmfit import Parameters
 
-from scipy import log10
-from scipy import logspace
+from numpy.lib.scimath import log10
+from numpy import logspace
 
 
 def gen_fit_pars(**kwargs):
@@ -123,4 +123,5 @@ def logspace_points_per_decade(start, end, ppd=5):
         Number of points per decade.
     """
     ndec = log10(end) - log10(start)
-    return logspace(log10(start), log10(end), num=(ndec * ppd - (ndec-1)))
+    num = int(ndec * ppd - (ndec-1))
+    return logspace(log10(start), log10(end), num=num)
