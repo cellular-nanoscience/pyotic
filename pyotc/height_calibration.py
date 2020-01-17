@@ -1241,7 +1241,7 @@ class HeightCalibration(object):
 
         Outliers are - for a given level of confidence - identified by the
         reduced chi² value and the number of degrees of freedom of the
-        fit to the power spectral density. 
+        fit to the power spectral density.
 
         Arguments
         ---------
@@ -1288,7 +1288,7 @@ class HeightCalibration(object):
             self._offset = OrderedDict()
             self._gen_height_data()
             self._construct_arrays()
-        
+
 
     def get_values(self, vname, name=None, nomask=False):
         """
@@ -2448,7 +2448,7 @@ class HeightCalibration(object):
         """
         Try to determine the focal shift from the oscillation of the signal.
 
-        Uses pyotc.focal_shift.get_focal_shift(). 
+        Uses pyotc.focal_shift.get_focal_shift().
 
         Arguments
         ---------
@@ -2469,7 +2469,7 @@ class HeightCalibration(object):
             Wheter to print the found focal shift.
         plot_fit : bool
 
-        Notes 
+        Notes
         -----
         The used data does not take the unmasked data, which is defined through
         HC._mask. Instead the idx_slice can be used to define the used data.
@@ -2483,7 +2483,7 @@ class HeightCalibration(object):
             signal = self.get_dissens(name, nomask=True)
 
         wl = wavelength or self.get_wavelength(unit=wavelength_unit)
-        
+
         mzr = get_focal_shift(heights[idx_slice],
                               signal[idx_slice],
                               wl,
@@ -2782,7 +2782,7 @@ class HeightCalibration(object):
         data[co.fit_method] = self.height_fit_results.method
         data[co.radius] = '{0:1.5e}'.format(self.get_radius(unit=radius_unit))
         data[co.radius_err] = '{0:1.5e}'.format(self.get_radius_err(unit=radius_unit))
-        
+
         data[co.fs] = '{0:1.5e}'.format(pars['focal_shift'].value)
         data[co.dfs] = '{0:1.5e}'.format(pars['focal_shift'].stderr)
 
@@ -2790,12 +2790,12 @@ class HeightCalibration(object):
             hconv = ureg('um').to(height_unit).magnitude
         else:
             hconv = 1.0
-        
+
         data[co.h0] = '{0:1.5e}'.format(pars['h0'].value * hconv)
         data[co.h0_err] = '{0:1.5e}'.format(pars['h0'].stderr * hconv)
-        
+
         data[co.height_offset] = '{0:1.5e}'.format(self.height_offset * hconv)
-        
+
         d_app_surf = (pars['h0'].value - self.height_offset) * hconv
         data[co.d_app_surf] = '{0:1.5e}'.format(d_app_surf)
         data[co.d_app_surf_err] = '{0:1.5e}'.format(pars['h0'].stderr * hconv)
@@ -3739,7 +3739,7 @@ class HeightCalibration(object):
 
         self.plot_drag(axis=ax1, height_unit=height_unit)
         self.plot_drag(axis=ax1, plot_outliers=True,
-                       height_unit=height_unit, c='gray')
+                       height_unit=height_unit, color='gray')
 
         zplotted = False
 
@@ -3758,7 +3758,7 @@ class HeightCalibration(object):
                               axis=ax2_,
                               plot_ac_data=False,
                               plot_corrected=plot_corrected,
-                              c=col_dict[idx],
+                              color=col_dict[idx],
                               height_unit=height_unit,
                               dissens_unit=dissens_unit)
             self.plot_dissens(names=name,
@@ -3766,7 +3766,7 @@ class HeightCalibration(object):
                               plot_ac_data=False,
                               plot_corrected=plot_corrected,
                               plot_outliers=True,
-                              c=col_dict[idx + 10],
+                              color=col_dict[idx + 10],
                               height_unit=height_unit,
                               dissens_unit=dissens_unit)
 
@@ -3774,7 +3774,7 @@ class HeightCalibration(object):
                                      axis=ax3_,
                                      plot_ac_data=False,
                                      plot_corrected=plot_corrected,
-                                     c=col_dict[idx],
+                                     color=col_dict[idx],
                                      height_unit=height_unit,
                                      trap_stiffness_unit=trap_stiffness_unit)
             self.plot_trap_stiffness(names=name,
@@ -3782,13 +3782,13 @@ class HeightCalibration(object):
                                      plot_ac_data=False,
                                      plot_corrected=plot_corrected,
                                      plot_outliers=True,
-                                     c=col_dict[idx + 10],
+                                     color=col_dict[idx + 10],
                                      height_unit=height_unit,
                                      trap_stiffness_unit=trap_stiffness_unit)
 
-            self.plot_redchi2(names=name, axis=ax4_, c=col_dict[idx])
+            self.plot_redchi2(names=name, axis=ax4_, color=col_dict[idx])
             self.plot_redchi2(names=name, axis=ax4,
-                              plot_outliers=True, c=col_dict[idx + 10])
+                              plot_outliers=True, color=col_dict[idx + 10])
 
         plt.setp([ax1, ax2, ax3], xlabel='')
         plt.setp([ax1.get_xticklabels(),
@@ -4010,7 +4010,7 @@ class HeightCalibTime(object):
     def __init__(self, motion, ex_freq, psd_names=None, position_names=None):
         """
         Initializes a HeightCalibTime object from a PyOTI Motion object.
-        
+
         Arguments
         ---------
         motion : Motion
