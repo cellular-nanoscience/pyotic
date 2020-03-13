@@ -23,7 +23,7 @@ class Tether(Evaluator):
     ('left', 'right'), and different cycles ('stress', 'release'), a
     CycleSectioner is used.
     """
-    def __init__(self, region=None, calibration=None, resolution=1000,
+    def __init__(self, region=None, calibration=None, resolution=None,
                  filter_time=-1.0, resolution_sf=None, filter_time_sf=None,
                  **kwargs):
         """
@@ -646,7 +646,7 @@ class Tether(Evaluator):
         dispXYZ = displacementXYZ(calibration, psdXYZ, positionZ)
         return dispXYZ
 
-    def forceXYZ(self, samples=None):
+    def forceXYZ(self, samples=None, fXYZ_factors=None):
         """
         Force in N, that is acting on the tether
         """
@@ -655,10 +655,11 @@ class Tether(Evaluator):
         positionZ = data[:, [3]]
         calibration = self.calibration
 
-        fXYZ = forceXYZ(calibration, psdXYZ, positionZ)
+        fXYZ = forceXYZ(calibration, psdXYZ, positionZ,
+                        fXYZ_factors=fXYZ_factors)
         return fXYZ
 
-    def force(self, samples=None, twoD=False, posmin=10e-9):
+    def force(self, samples=None, twoD=False, posmin=10e-9, fXYZ_factors=None):
         """
         Magnitude of the force in N acting on the tethered molecule (1D
         numpy.ndarray).
@@ -686,7 +687,8 @@ class Tether(Evaluator):
         if twoD:
             psdXYZ[:, Z] = 0.0
 
-        fXYZ = forceXYZ(calibration, psdXYZ, positionZ)
+        fXYZ = forceXYZ(calibration, psdXYZ, positionZ,
+                        fXYZ_factors=fXYZ_factors)
         f = force(fXYZ, positionXY, posmin=posmin)
         return f
 
@@ -754,7 +756,8 @@ class Tether(Evaluator):
         e = extension(dist, calibration.radius)
         return e
 
-    def force_extension(self, samples=None, twoD=False, posmin=10e-9):
+    def force_extension(self, samples=None, twoD=False, posmin=10e-9,
+                        fXYZ_factors=None):
         """
         Extension (m, first column) of and force (N, second column) acting
         on the tethered molecule (2D numpy.ndarray).
@@ -786,7 +789,8 @@ class Tether(Evaluator):
         dist = distance(distXYZ, positionXY, posmin=posmin)
         e = extension(dist, calibration.radius)
 
-        fXYZ = forceXYZ(calibration, psdXYZ, positionZ)
+        fXYZ = forceXYZ(calibration, psdXYZ, positionZ,
+                        fXYZ_factors=fXYZ_factors)
         f = force(fXYZ, positionXY, posmin=posmin)
         return np.c_[e, f]
 
@@ -912,17 +916,20 @@ def displacementXYZ(calibration, psdXYZ, positionZ=0.0):
     return dispXYZ
 
 
-def forceXYZ(calibration, psdXYZ, positionZ):
+def forceXYZ(calibration, psdXYZ, positionZ, fXYZ_factors=None):
     """
     Force acting on the bead
     """
     displacementXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
     fXYZ = calibration.force(displacementXYZ, positionZ=positionZ)
 
+    # Optionally use correctur factors for the calculated force
+    fXYZ_factors = 1 if fXYZ_factors is None else fXYZ_factors
+
     # A displacement of the bead in the positive (negative) direction results
     # in a force acting on the bead in the opposite negative (positive)
     # direction.
-    fXYZ *= - 1.0
+    fXYZ *= - 1.0 * fXYZ_factors
 
     return fXYZ
 
