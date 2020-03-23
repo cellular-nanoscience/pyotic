@@ -267,12 +267,14 @@ class Experiment(object):
             autosave and self._save(description="Add version")
 
     @if_closed_return(True)
-    def close(self, verbose=True, discard_temp=True):
+    def close(self, verbose=True, discard_temp=True, abort=False):
         """
         Close the file the Experiment is stored in.
         """
         # Check if database was opened in temporary mode. If so, abort, close,
         # and delete temporary files.
+        if abort:
+            self.abort()
         if discard_temp and self._tempdir is not None:
             print("Temporary experiment file to be deleted:\n  '%s'"
                   % self.filename)
