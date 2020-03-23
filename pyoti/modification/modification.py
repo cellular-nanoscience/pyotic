@@ -629,6 +629,11 @@ class Modification(GraphMember, metaclass=ABCMeta):
             active = self.iattributes.active
         return active
 
+    @active.setter
+    def active(self, active=True):
+        if 'active' in self.iattributes:
+            self.iattributes.active = active
+
     @property
     def automatic(self):
         # Does the modification automatically calculate its parameters
