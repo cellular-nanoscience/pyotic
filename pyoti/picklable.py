@@ -195,7 +195,7 @@ class InteractiveAttributes(persistent.Persistent):
         """
         # create and register a widget
         widget = self._create_widget(key, value=value, description=description,
-                                     options=options)
+                                     options=options, **kwargs)
         self._widgets[key] = widget
 
         # Register callback functions to be called upon widget value change
@@ -208,7 +208,8 @@ class InteractiveAttributes(persistent.Persistent):
         # inform ZODB of change
         self._p_changed = True
 
-    def _create_widget(self, key, value=None, description=None, options=None):
+    def _create_widget(self, key, value=None, description=None, options=None,
+                       **kwargs):
         # create widget according to the type of value
         try:
             value_type = value if value is None else type(value)
@@ -217,7 +218,7 @@ class InteractiveAttributes(persistent.Persistent):
                     options = value
             widget_class = WIDGET_CLASS[value_type]
             widget = widget_class(description=description, value=value,
-                                  options=options)
+                                  options=options, **kwargs)
 
             # register _widget_callback() to be called upon change of widget
             # value
