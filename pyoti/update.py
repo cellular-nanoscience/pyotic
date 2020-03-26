@@ -629,6 +629,16 @@ def _update_db(experiment, old_version, new_version):
                     # Update rotation method from nm to m
                     mod.rotation_method = 'm'
 
+        # Update to 0.16.0
+        if old_version < comp('0.16.0'):
+            for mod in experiment.modifications():
+                class_name \
+                    = ''.join((mod.__module__, '.', mod.__class__.__name__))
+                if class_name \
+                        == 'pyoti.plugins.modifications.baseline.Baseline':
+                    mod.add_iattribute('baseline_decimate',
+                                       description="Baseline decimate",
+                                       value=1, unset_automatic=False)
 
         # Update to X.Y.Z
         # if old_version < comp('X.Y.Z'):

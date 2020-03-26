@@ -112,6 +112,10 @@ class Baseline(Modification):
         self.add_iattribute('bin_time', description=description,
                             value=0.01, unset_automatic=False)
 
+        description = "Baseline decimate"
+        self.add_iattribute('baseline_decimate', description=description,
+                            value=1, unset_automatic=False)
+
         description = "Traces to be corrected"
         self.add_iattribute('modify_traces', description=description,
                             value=self.traces_apply, unset_automatic=False)
@@ -221,7 +225,9 @@ class Baseline(Modification):
 
     @property
     def baseline_idx(self):
-        return self._baseline_idx
+        max_decimate = max(0, len(self._baseline_idx) - 1)
+        decimate = min(max_decimate, self.iattributes.baseline_decimate)
+        return self._baseline_idx[::decimate]
 
     @baseline_idx.setter
     def baseline_idx(self, baseline_idx):
