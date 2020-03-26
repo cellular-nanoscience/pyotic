@@ -146,7 +146,7 @@ WIDGET_CLASS = {
     None: widgets.Button,
     bool: widgets.Checkbox,
     float: widgets.FloatText,
-    int: widgets.FloatText,
+    int: widgets.IntText,
     list: widgets.SelectMultiple,
     tuple: widgets.SelectMultiple
 }
@@ -211,10 +211,7 @@ class InteractiveAttributes(persistent.Persistent):
     def _create_widget(self, key, value=None, description=None, options=None):
         # create widget according to the type of value
         try:
-            if value is None:
-                value_type = None
-            else:
-                value_type = type(value)
+            value_type = value if value is None else type(value)
             if isinstance(value, collections.Iterable) \
                 and not isinstance(options, collections.Iterable):
                     options = value
