@@ -1,4 +1,7 @@
 * Release notes
+** Version 0.16.0
+ Add option to decimate the baseline in Modification Baseline.
+Other improvements.
 ** Version 0.15.1
  Correct double assignment of paramters ['c', 'color']
 ** Version 0.15.0
