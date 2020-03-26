@@ -150,6 +150,10 @@ WIDGET_CLASS = {
     list: widgets.SelectMultiple,
     tuple: widgets.SelectMultiple
 }
+WIDGET_CLASS_BOUNDED = {
+    float: widgets.BoundedFloatText,
+    int: widgets.BoundedIntText
+}
 
 
 class InteractiveAttributes(persistent.Persistent):
@@ -216,7 +220,10 @@ class InteractiveAttributes(persistent.Persistent):
             if isinstance(value, collections.Iterable) \
                 and not isinstance(options, collections.Iterable):
                     options = value
-            widget_class = WIDGET_CLASS[value_type]
+            if 'min' in kwargs or 'max' in kwargs:
+                widget_class = WIDGET_CLASS_BOUNDED[value_type]
+            else:
+                widget_class = WIDGET_CLASS[value_type]
             widget = widget_class(description=description, value=value,
                                   options=options, **kwargs)
 
@@ -324,9 +331,9 @@ class InteractiveAttributes(persistent.Persistent):
     def __getstate__(self):
         """Return state values to be pickled."""
         # To circumvent: TypeError: can't pickle instancemethod objects
-        # __getstate__ should replace instances in self._widgets with
-        # information necessary to recreate widgets:
-        # widget_classe, description, and value
+        # __getstate__ replaces instances in self._widgets with information
+        # necessary to recreate widgets, i.e. widget_class, description, and
+        # value
         state = self.__dict__.copy()
         state['_widgets'] = state['_widgets'].copy()
         for key, widget in state['_widgets'].items():
@@ -344,8 +351,9 @@ class InteractiveAttributes(persistent.Persistent):
 
     def __setstate__(self, state):
         """Restore state from the unpickled state values."""
-        # __setstate__ should refill self._widgets with the information stored
-        # in self._widgets. Compare with self.add() for necessary steps
+        # __setstate__ refills self._widgets with the information stored in
+        # self._widgets. Compare with the function self.add() for necessary
+        # steps.
         for key, widgetState in state['_widgets'].items():
             if len(widgetState) == 2:
                 value, description = widgetState
