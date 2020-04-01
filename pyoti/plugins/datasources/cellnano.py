@@ -156,7 +156,7 @@ def read_labview_bin_data(filename, dtype='>d', start_row_idx=0,
         if (chunk_row_stop > start_row_idx
                 and (number_of_rows < 0 or chunk_row_start < stop_row_idx)):
             # Check read position and number of rows of first chunk
-            if len(chunks) is 0:
+            if len(chunks) == 0:
                 shift = start_row_idx - chunk_row_start
                 chunk = (chunk[0] + shift * chunk[2],
                          chunk[1] - shift,
