@@ -937,7 +937,7 @@ def forceXYZ(calibration, psdXYZ, positionZ, fXYZ_factors=None):
     return fXYZ
 
 
-def force(forceXYZ, positionXY, posmin=10e-9, consider_sign_axes=None):
+def force(forceXYZ, positionXY, posmin=10e-9, sign_axes=None):
     """
     Parameters
     ----------
@@ -975,7 +975,7 @@ def force(forceXYZ, positionXY, posmin=10e-9, consider_sign_axes=None):
     force_sq_sum = np.sum(force_sq, axis=1)
     # Calculate a "weighted" sign. Greater forces have greater influence on the
     # final sign
-    axs = XY if consider_sign_axes is None else consider_sign_axes
+    axs = XY if sign_axes is None else sign_axes
     sign_force_sum = np.sign(np.sum(force_sq[:,axs] * signF[:,axs], axis=1))
     force = np.sqrt(force_sq_sum) * sign_force_sum
     return force
@@ -1079,7 +1079,7 @@ def displacement(displacementXYZ, positionXY, posmin=10e-9):
     return - distance(displacementXYZ, positionXY, posmin=posmin)
 
 
-def distance(distanceXYZ, positionXY, posmin=10e-9, consider_sign_axes=None):
+def distance(distanceXYZ, positionXY, posmin=10e-9, sign_axes=None):
     """
     Calculate the distance of the attachment point to the bead center.
 
@@ -1119,7 +1119,7 @@ def distance(distanceXYZ, positionXY, posmin=10e-9, consider_sign_axes=None):
     dist_sq_sum = np.sum(distance_sq, axis=1)
     # Calculate a "weighted" sign. Greater distances have greater influence on
     # the final sign
-    axs = XY if consider_sign_axes is None else consider_sign_axes
+    axs = XY if sign_axes is None else sign_axes
     sign_dist_sum = np.sign(np.sum(distance_sq[:,axs] * signD[:,axs], axis=1))
     return np.sqrt(dist_sq_sum) * sign_dist_sum
 
