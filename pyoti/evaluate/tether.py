@@ -1079,7 +1079,7 @@ def displacement(displacementXYZ, positionXY, posmin=10e-9):
     return - distance(displacementXYZ, positionXY, posmin=posmin)
 
 
-def distance(distanceXYZ, positionXY, posmin=10e-9):
+def distance(distanceXYZ, positionXY, posmin=10e-9, ignore_sign_distZ=True):
     """
     Calculate the distance of the attachment point to the bead center.
 
@@ -1116,10 +1116,11 @@ def distance(distanceXYZ, positionXY, posmin=10e-9):
 
     # Square the distances and account for the signs
     distance_sq = distanceXYZ**2
+    dist_sq_sum = np.sum(distance_sq, axis=1)
     # Calculate a "weighted" sign. Greater distances have greater influence on
     # the final sign
-    dist_sq_sum = np.sum(distance_sq, axis=1)
-    sign_dist_sum = np.sign(np.sum(distance_sq * signD, axis=1))
+    axs = XY if ignore_sign_distZ else XYZ
+    sign_dist_sum = np.sign(np.sum(distance_sq[:,axs] * signD[:,axs], axis=1))
     return np.sqrt(dist_sq_sum) * sign_dist_sum
 
 
