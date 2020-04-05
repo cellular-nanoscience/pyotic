@@ -937,7 +937,7 @@ def forceXYZ(calibration, psdXYZ, positionZ, fXYZ_factors=None):
     return fXYZ
 
 
-def force(forceXYZ, positionXY, posmin=10e-9):
+def force(forceXYZ, positionXY, posmin=10e-9, ignore_sign_forceZ=True):
     """
     Parameters
     ----------
@@ -975,7 +975,8 @@ def force(forceXYZ, positionXY, posmin=10e-9):
     force_sq_sum = np.sum(force_sq, axis=1)
     # Calculate a "weighted" sign. Greater forces have greater influence on the
     # final sign
-    sign_force_sum = np.sign(np.sum(force_sq * signF, axis=1))
+    axs = XY if ignore_sign_forceZ else XYZ
+    sign_force_sum = np.sign(np.sum(force_sq[:,axs] * signF[:,axs], axis=1))
     force = np.sqrt(force_sq_sum) * sign_force_sum
     return force
 
