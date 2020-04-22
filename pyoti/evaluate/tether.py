@@ -1016,14 +1016,12 @@ def distanceXYZ(calibration, psdXYZ, positionXYZ, radius=None, focalshift=None,
     displacementXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
 
     # distance, point of attachment of DNA
-    # displacement, displacement of bead out of trap center
-    # radius
+    # displacement, displacement of bead out of trap center radius
     distanceXYZ = positionXYZ.copy()
     # distance from attachment point to center of bead
     # attachmentXY - displacementXY
     distanceXYZ[:, 0:2] -= displacementXYZ[:, 0:2]
-    # Direction of distance vector is from attachment point
-    # to the bead center
+    # Direction of distance vector is from attachment point to the bead center
     distanceXYZ[:, 0:2] *= -1
 
     # If the bead is free (i.e. above the surface with a distance Z > 0), a
@@ -1119,7 +1117,7 @@ def distance(distanceXYZ, positionXY, posmin=10e-9, sign_axes=None):
     dist_sq_sum = np.sum(distance_sq, axis=1)
     # Calculate a "weighted" sign. Greater distances have greater influence on
     # the final sign
-    axs = XY if sign_axes is None else sign_axes
+    axs = XYZ if sign_axes is None else sign_axes
     sign_dist_sum = np.sign(np.sum(distance_sq[:,axs] * signD[:,axs], axis=1))
     return np.sqrt(dist_sq_sum) * sign_dist_sum
 
