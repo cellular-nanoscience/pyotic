@@ -910,21 +910,29 @@ def print_info(tether, i=0):
                                     * tether.calibration.focalshift))
 
 
-def displacementXYZ(calibration, psdXYZ, positionZ=0.0):
+def displacementXYZ(calibration, psdXYZ, positionZ=0.0, dXYZ_factors=None):
     """
     Displacement in m with height dependent calibration factors for X, Y
     and Z.
     """
     dispXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
+
+    # Optionally use correctur factors for the calculated displacement
+    dXYZ_factors = 1 if dXYZ_factors is None else dXYZ_factors
+
+    dispXYZ *= dXYZ_factors
+
     return dispXYZ
 
 
-def forceXYZ(calibration, psdXYZ, positionZ, fXYZ_factors=None):
+def forceXYZ(calibration, psdXYZ, positionZ, dXYZ_factors=None,
+             fXYZ_factors=None):
     """
     Force acting on the bead
     """
-    displacementXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
-    fXYZ = calibration.force(displacementXYZ, positionZ=positionZ)
+    dispXYZ = displacementXYZ(calibration, psdXYZ, positionZ=positionZ,
+                              dXYZ_factors=dXYZ_factors)
+    fXYZ = calibration.force(dispXYZ, positionZ=positionZ)
 
     # Optionally use correctur factors for the calculated force
     fXYZ_factors = 1 if fXYZ_factors is None else fXYZ_factors
