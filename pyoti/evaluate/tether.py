@@ -469,7 +469,7 @@ class Tether(Evaluator):
 
     def force_extension_pair(self, i, axis=None, direction=None, decimate=None,
                              time=False, twoD=False, posmin=10e-9,
-                             fXYZ_factors=None):
+                             dXYZ_factors=None, fXYZ_factors=None):
         """
         Calculate the force extension pair with index `i`.
 
@@ -515,12 +515,14 @@ class Tether(Evaluator):
         fe_pair = self.force_extension_pairs(axis=axis, direction=direction,
                                              i=i, decimate=decimate, time=time,
                                              twoD=twoD, posmin=posmin,
+                                             dXYZ_factors=dXYZ_factors,
                                              fXYZ_factors=fXYZ_factors)
         return next(fe_pair)
 
     def force_extension_pairs(self, axis=None, direction=None, i=None,
                               decimate=None, time=False, twoD=False,
-                              posmin=10e-9, fXYZ_factors=None):
+                              posmin=10e-9, dXYZ_factors=None,
+                              fXYZ_factors=None):
         """
         Return a generator for force extension values of stress release pairs.
 
@@ -580,6 +582,7 @@ class Tether(Evaluator):
 
         # Get extension, force, and stress/release pairs
         e_f = self.force_extension(samples=samples, twoD=twoD, posmin=posmin,
+                                   dXYZ_factors=dXYZ_factors,
                                    fXYZ_factors=fXYZ_factors)  # m,N
         e = e_f[:, 0]
         f = e_f[:, 1]
