@@ -635,7 +635,7 @@ class Tether(Evaluator):
         idx = slice(idx_start, idx_stop, decimate)
         return idx
 
-    def displacementXYZ(self, samples=None):
+    def displacementXYZ(self, samples=None, dXYZ_factors=None):
         """
         Displacement in m with height dependent calibration factors for X, Y
         and Z.
@@ -646,10 +646,11 @@ class Tether(Evaluator):
         positionZ = data[:, [3]]
         calibration = self.calibration
 
-        dispXYZ = displacementXYZ(calibration, psdXYZ, positionZ)
+        dispXYZ = displacementXYZ(calibration, psdXYZ, positionZ,
+                                  dXYZ_factors=dXYZ_factors)
         return dispXYZ
 
-    def forceXYZ(self, samples=None, fXYZ_factors=None):
+    def forceXYZ(self, samples=None, dXYZ_factors=None, fXYZ_factors=None):
         """
         Force in N, that is acting on the tether
         """
@@ -659,10 +660,11 @@ class Tether(Evaluator):
         calibration = self.calibration
 
         fXYZ = forceXYZ(calibration, psdXYZ, positionZ,
-                        fXYZ_factors=fXYZ_factors)
+                        dXYZ_factors=dXYZ_factors, fXYZ_factors=fXYZ_factors)
         return fXYZ
 
-    def force(self, samples=None, twoD=False, posmin=10e-9, fXYZ_factors=None):
+    def force(self, samples=None, twoD=False, posmin=10e-9, dXYZ_factors=None,
+              fXYZ_factors=None):
         """
         Magnitude of the force in N acting on the tethered molecule (1D
         numpy.ndarray).
@@ -691,11 +693,11 @@ class Tether(Evaluator):
             psdXYZ[:, Z] = 0.0
 
         fXYZ = forceXYZ(calibration, psdXYZ, positionZ,
-                        fXYZ_factors=fXYZ_factors)
+                        dXYZ_factors=dXYZ_factors, fXYZ_factors=fXYZ_factors)
         f = force(fXYZ, positionXY, posmin=posmin)
         return f
 
-    def distanceXYZ(self, samples=None):
+    def distanceXYZ(self, samples=None, dXYZ_factors=None):
         """
         Distance of the attachment point to the bead center as a 3D vector.
         """
@@ -704,10 +706,12 @@ class Tether(Evaluator):
         positionXYZ = data[:, 3:6]
         calibration = self.calibration
 
-        distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ)
+        distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ,
+                              dXYZ_factors=dXYZ_factors)
         return distXYZ
 
-    def distance(self, samples=None, twoD=False, posmin=10e-9):
+    def distance(self, samples=None, twoD=False, posmin=10e-9,
+                 dXYZ_factors=None):
         """
         Distance of the attachment point to the bead center.
 
@@ -733,7 +737,8 @@ class Tether(Evaluator):
         if twoD:
             psdXYZ[:, Z] = 0.0
 
-        distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ)
+        distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ,
+                              dXYZ_factors=dXYZ_factors)
         dist = distance(distXYZ, positionXY, posmin=posmin)
         return dist
 
@@ -760,7 +765,7 @@ class Tether(Evaluator):
         return e
 
     def force_extension(self, samples=None, twoD=False, posmin=10e-9,
-                        fXYZ_factors=None):
+                        dXYZ_factors=None, fXYZ_factors=None):
         """
         Extension (m, first column) of and force (N, second column) acting
         on the tethered molecule (2D numpy.ndarray).
@@ -788,12 +793,13 @@ class Tether(Evaluator):
         # 2D or 3D calculation of the distance in Z
         if twoD:
             psdXYZ[:, Z] = 0.0
-        distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ)
+        distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ,
+                              dXYZ_factors=dXYZ_factors)
         dist = distance(distXYZ, positionXY, posmin=posmin)
         e = extension(dist, calibration.radius)
 
         fXYZ = forceXYZ(calibration, psdXYZ, positionZ,
-                        fXYZ_factors=fXYZ_factors)
+                        dXYZ_factors=dXYZ_factors, fXYZ_factors=fXYZ_factors)
         f = force(fXYZ, positionXY, posmin=posmin)
         return np.c_[e, f]
 
@@ -990,7 +996,7 @@ def force(forceXYZ, positionXY, posmin=10e-9, sign_axes=None):
 
 
 def distanceXYZ(calibration, psdXYZ, positionXYZ, radius=None, focalshift=None,
-                clip_Z=True):
+                clip_Z=True, dXYZ_factors=None):
     """
     Distance of the attachment point to the bead center as a 3D vector.
     positionXYZ, displacementXYZ and radius need to have the same unit.
@@ -1021,14 +1027,15 @@ def distanceXYZ(calibration, psdXYZ, positionXYZ, radius=None, focalshift=None,
         radius = calibration.radius
     positionZ = positionXYZ[:,2]
 
-    displacementXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
+    displXYZ = displacementXYZ(calibration, psdXYZ, positionZ=positionZ,
+                               dXYZ_factors=dXYZ_factors)
 
     # distance, point of attachment of DNA
     # displacement, displacement of bead out of trap center radius
     distanceXYZ = positionXYZ.copy()
     # distance from attachment point to center of bead
     # attachmentXY - displacementXY
-    distanceXYZ[:, 0:2] -= displacementXYZ[:, 0:2]
+    distanceXYZ[:, 0:2] -= displXYZ[:, 0:2]
     # Direction of distance vector is from attachment point to the bead center
     distanceXYZ[:, 0:2] *= -1
 
@@ -1042,11 +1049,11 @@ def distanceXYZ(calibration, psdXYZ, positionXYZ, radius=None, focalshift=None,
     distanceXYZ[idx_free, 2] = (- positionXYZ[idx_free, 2] * focalshift
                                 + radius
                                 # distanceZ + radius + displacementZ
-                                + displacementXYZ[idx_free, 2])
+                                + displXYZ[idx_free, 2])
     distanceXYZ[idx_touch, 2] = (- positionXYZ[idx_touch, 2]
                                  + radius
                                  # distanceZ + radius + displacementZ
-                                 + displacementXYZ[idx_touch, 2])
+                                 + displXYZ[idx_touch, 2])
 
     if clip_Z:
         distanceXYZ[:, 2] = distanceXYZ[:, 2].clip(min=radius)
