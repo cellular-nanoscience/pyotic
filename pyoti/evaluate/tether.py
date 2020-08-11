@@ -517,7 +517,6 @@ class Tether(Evaluator):
                 pair[cycle][key] = pair[cycle][key][0]
         return pair
 
-
     def force_extension_pairs(self, i=None, axis=None, direction=None,
                               decimate=None, twoD=False, posmin=10e-9,
                               dXYZ_factors=None, fXYZ_factors=None):
@@ -592,17 +591,7 @@ class Tether(Evaluator):
                 for key in fe:
                     data[cycle][key].append(fe[key][i])
 
-        #pairs['settings'] = { 'i': i,
-        #                      'axis': axis,
-        #                      'direction': direction,
-        #                      'decimate': decimate,
-        #                      'twoD': twoD,
-        #                      'posmin': posmin,
-        #                      'dXYZ_factors': dXYZ_factors,
-        #                      'fXYZ_factors': fXYZ_factors }
-
         return data
-
 
     def samples(self, i=None, cycle=None, axis=None, direction=None,
                 decimate=None):
@@ -894,37 +883,37 @@ XYZ = hp.slicify([X, Y, Z])
 
 
 def print_info(tether, i=0):
-    pairs = tether.stress_release_pairs(i=i)
+    pairs = tether.stress_release_pairs(i=i, slices=True)
     stress = pairs['stress']['idx'][0]
     release = pairs['release']['idx'][0]
     stress_info = pairs['stress']['info'][0]
     release_info = pairs['release']['info'][0]
     resolution = tether.resolution
-    start_stress_t = stress[0].start / resolution
-    stop_stress_t = stress[0].stop / resolution
-    start_release_t = release[0].start / resolution
-    stop_release_t = release[0].stop / resolution
+    start_stress_t = stress.start / resolution
+    stop_stress_t = stress.stop / resolution
+    start_release_t = release.start / resolution
+    stop_release_t = release.stop / resolution
     print("Stress release pair: #{:03d}".format(i))
     print("Focal shift: {:.3f}".format(tether.calibration.focalshift))
     print("Axis: {}".format(stress_info[0][0]))
     print("  stress")
     print("    t:  {:.3f} s".format(stop_stress_t - start_stress_t))
     print("        {:.2f} s - {:.2f} s".format(start_stress_t, stop_stress_t))
-    print("    datapoints: {}".format(stress[0].stop - stress[0].start))
+    print("    datapoints: {}".format(stress.stop - stress.start))
     print("    z0: {:.2f} nm".format(
-        - np.median(tether.get_data('positionZ', stress[0])) * 1e9))
+        - np.median(tether.get_data('positionZ', stress)) * 1e9))
     print("    h0: {:.2f} nm".format(
-        - np.median(tether.get_data('positionZ', stress[0])) * 1e9
+        - np.median(tether.get_data('positionZ', stress)) * 1e9
                                     * tether.calibration.focalshift))
     print("  release")
     print("    t:  {:.3f} s".format(stop_release_t - start_release_t))
     print("        {:.2f} s - {:.2f} s".format(start_release_t,
                                                stop_release_t))
-    print("    datapoints: {}".format(release[0].stop - release[0].start))
+    print("    datapoints: {}".format(release.stop - release.start))
     print("    z0: {:.2f} nm".format(
-        - np.median(tether.get_data('positionZ', release[0])) * 1e9))
+        - np.median(tether.get_data('positionZ', release)) * 1e9))
     print("    h0: {:.2f} nm".format(
-        - np.median(tether.get_data('positionZ', release[0])) * 1e9
+        - np.median(tether.get_data('positionZ', release)) * 1e9
                                     * tether.calibration.focalshift))
 
 
