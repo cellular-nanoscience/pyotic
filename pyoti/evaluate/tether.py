@@ -192,7 +192,7 @@ class Tether(Evaluator):
         extrema.sort()
         return extrema
 
-    def stress_release_pairs(self, axis=None, direction=None, i=None,
+    def stress_release_pairs(self, i=None, axis=None, direction=None,
                              slices=True, decimate=None, **kwargs):
         """
         Calculate start/stop indices (as segments or slices) of stress/release
@@ -200,15 +200,15 @@ class Tether(Evaluator):
 
         Parameters
         ----------
-        axis : str or list of str, optional
-            'x', 'y', or ['x', 'y'] (default)
-        direction : str or list of str, optional
-            'left', 'right', or ['left', 'right'] (default)
         i : int, optional
             The index of the stress release pair to be selected and returned
             from all stress release pairs calculated. Depending on `axis` and
             `direction` the total availabe number of stress release pairs may
             vary.
+        axis : str or list of str, optional
+            'x', 'y', or ['x', 'y'] (default)
+        direction : str or list of str, optional
+            'left', 'right', or ['left', 'right'] (default)
         slices : bool, optional
             Set to False to return segments instead of slices. Default is True.
         decimate : int, optional
@@ -222,11 +222,11 @@ class Tether(Evaluator):
         -------
         dict
             stress : 1D np.ndarray of slices or segments
-                idcs: 1D np.ndarray of slices or segments
-                infos: 1D np.ndarray of 1D np.ndarrays of type str
+                idx: 1D np.ndarray of slices or segments
+                info: 1D np.ndarray of 1D np.ndarrays of type str
                     The str arrays have the form of [axis, direction, cycle].
             release : 1D np.ndarray of slices or segments
-                infos: 1D np.ndarray of 1D np.ndarrays of type str
+                info: 1D np.ndarray of 1D np.ndarrays of type str
                     The str arrays have the form of [axis, direction, cycle].
         """
         axis = ['x', 'y'] if axis is None else axis
@@ -235,18 +235,14 @@ class Tether(Evaluator):
 
         # Get unpaired stress/release indices and initialize paired
         # dictionaries
-        idcs = {}
-        infos = {}
-        _idcs = {}
-        _infos = {}
+        pairs = {}
+        _pairs = {}
         for cycle in ['stress', 'release']:
-            idcs[cycle] = []
-            infos[cycle] = []
-            _idcs[cycle], _infos[cycle] = self.sections(axis=axis,
-                                                        direction=direction,
-                                                        cycle=cycle,
-                                                        slices=False,
-                                                        info=True)
+            pairs[cycle] = { 'idx': [], 'info': [] }
+            _pairs[cycle] = {}
+            _pairs[cycle]['idx'], _pairs[cycle]['info'] \
+                = self.sections(axis=axis, direction=direction, cycle=cycle,
+                                slices=False, info=True)
 
         # Group all stress/release cycle pairs according to the extrema
         # A stress release pair corresponds to one extremum, only if the stop
@@ -256,12 +252,12 @@ class Tether(Evaluator):
         extrema = self._extrema(axis=axis)
         for ext in extrema:
             # Get pair of stress/release whose stop/start is equal to extremum
-            i_str = _idcs['stress'][:, 1] == ext
-            i_rls = _idcs['release'][:, 0] == ext
-            stress = _idcs['stress'][i_str]
-            release = _idcs['release'][i_rls]
-            stress_info = infos['stress'][i_str]
-            release_info = infos['release'][i_rls]
+            i_str = _pairs['stress']['idx'][:, 1] == ext
+            i_rls = _pairs['release']['idx'][:, 0] == ext
+            stress = _pairs['stress']['idx'][i_str]
+            release = _pairs['release']['idx'][i_rls]
+            stress_info = _pairs['stress']['info'][i_str]
+            release_info = _pairs['release']['info'][i_rls]
 
             if stress.size == 0 and release.size > 0:
                 # Create stress slice, if only release is valid
@@ -270,14 +266,14 @@ class Tether(Evaluator):
                 # Create release slice, if only stress is valid
                 release = np.array([[ext, ext]])
             if stress.size > 0 and release.size > 0:
-                idcs['stress'].append(stress)
-                idcs['release'].append(release)
-                infos['stress'].append(stress_info)
-                infos['release'].append(release_info)
+                pairs['stress']['idx'].append(stress)
+                pairs['release']['idx'].append(release)
+                pairs['stress']['info'].append(stress_info)
+                pairs['release']['info'].append(release_info)
 
         # Get the maximum number of stress release pairs, prevent index
         # overflow, and allow for negative indices
-        stop = len(idcs['stress'])
+        stop = len(pairs['stress']['idx'])
         if i is not None:
             if i < 0: i = stop + i
             i = min(max(0, i), stop - 1)
@@ -287,17 +283,14 @@ class Tether(Evaluator):
 
         # Convert lists into arrays and segments into slices
         for cycle in ['stress', 'release']:
-            idcs[cycle] = np.concatenate(idcs[cycle])[s]
-            infos[cycle] = np.concatenate(infos[cycle])[s]
+            pairs[cycle]['idx'] = np.concatenate(pairs[cycle]['idx'])[s]
+            pairs[cycle]['info'] = np.concatenate(pairs[cycle]['info'])[s]
             if slices:
-                idcs[cycle] = sn.idx_segments_to_slices(idcs[cycle],
-                                                        decimate=decimate)
+                pairs[cycle]['idx'] = \
+                    sn.idx_segments_to_slices(pairs[cycle]['idx'],
+                                              decimate=decimate)
 
-        stress_release_pairs = {
-            'idcs': idcs,
-            'infos': infos
-        }
-        return stress_release_pairs
+        return pairs
 
 
     def baseline_idx(self, axis=None, strict=False, extrapolate=False):
@@ -324,10 +317,9 @@ class Tether(Evaluator):
         if strict:
             # Get only stress/release pairs, i.e. only segment pairs, whose
             # release's stop and stress's start index equal an extremum.
-            stress_release_pairs = self.stress_release_pairs(axis=axis,
-                                                             slices=False)
-            stresses = stress_release_pairs['idcs']['stress']
-            releases = stress_release_pairs['idcs']['release']
+            pairs = self.stress_release_pairs(axis=axis, slices=False)
+            stresses = pairs['stress']['idx']
+            releases = pairs['release']['idx']
         else:
             # Get all stress/release segments, even those without a
             # corresponding extremum.
@@ -387,10 +379,10 @@ class Tether(Evaluator):
             s = self.get_data(traces=trace) * 1e6  # m -> µm
             r_str_rls = self.stress_release_pairs(axis=axis, direction='right')
             l_str_rls = self.stress_release_pairs(axis=axis, direction='left')
-            rstr = r_str_rls['idcs']['stress']
-            lstr = l_str_rls['idcs']['stress']
-            rrls = r_str_rls['idcs']['release']
-            lrls = l_str_rls['idcs']['release']
+            rstr = r_str_rls['stress']['idx']
+            lstr = l_str_rls['stress']['idx']
+            rrls = r_str_rls['release']['idx']
+            lrls = l_str_rls['release']['idx']
 
             ax.plot(t, s, lw=0.1, ms=2, color='k', alpha=1.0)
 
@@ -514,23 +506,19 @@ class Tether(Evaluator):
             Axis can be either 'x' or 'y'. Direction can be 'left', or 'right'.
             Cycle is 'release'.
         """
-        pair = self.force_extension_pairs(axis=axis, direction=direction,
-                                          i=i, decimate=decimate,
-                                          twoD=twoD, posmin=posmin,
+        pair = self.force_extension_pairs(i=i, axis=axis, direction=direction,
+                                          decimate=decimate, twoD=twoD,
+                                          posmin=posmin,
                                           dXYZ_factors=dXYZ_factors,
                                           fXYZ_factors=fXYZ_factors)
 
-        return (pair['time']['stress'][0],
-                pair['extension']['stress'][0],
-                pair['force']['stress'][0],
-                pair['infos']['stress'][0],
-                pair['time']['release'][0],
-                pair['extension']['release'][0],
-                pair['force']['release'][0],
-                pair['infos']['release'][0])
+        for cycle in ['stress', 'release']:
+            for key in pair[cycle]:
+                pair[cycle][key] = pair[cycle][key][0]
+        return pair
 
 
-    def force_extension_pairs(self, axis=None, direction=None, i=None,
+    def force_extension_pairs(self, i=None, axis=None, direction=None,
                               decimate=None, twoD=False, posmin=10e-9,
                               dXYZ_factors=None, fXYZ_factors=None):
         """
@@ -538,13 +526,12 @@ class Tether(Evaluator):
 
         Parameters
         ----------
-        str_rls_pairs : tuple of 4 numpy.ndarrays, optional
+        i : int
+            Index of the force extension pair to be yielded.
         axis : str, optional
             See method `self.stress_release_pairs()`.
         direction : str, optional
             See method `self.stress_release_pairs()`.
-        i : int
-            Index of the force extension pair to be yielded.
         decimate : int, optional
             See method `seld.stress_release_pairs()`.
         posmin : float
@@ -559,56 +546,66 @@ class Tether(Evaluator):
 
         Yields
         ------
-        1D numpy.ndarray of type float
-            Extension values of stress cycles in m.
-        1D numpy.ndarray of type float
-            Force values of stress cycles in N.
-        1D numpy.ndarray of type str
-            (str, str, str), containing the axis, direction, and the cycle.
-            Axis can be either 'x' or 'y'. Direction can be 'left', or 'right'.
-            Cycle is 'stress'.
-        1D numpy.ndarray of type float
-            Extension values of release cycles in m.
-        1D numpy.ndarray of type float
-            Force values of release cycles in N.
-        1D numpy.ndarray of type str
-            (str, str, str), containing the axis, direction, and the cycle.
-            Axis can be either 'x' or 'y'. Direction can be 'left', or 'right'.
-            Cycle is 'release'.
+        dict
+            1D numpy.ndarray of type float
+                Extension values of stress cycles in m.
+            1D numpy.ndarray of type float
+                Force values of stress cycles in N.
+            1D numpy.ndarray of type str
+                (str, str, str), containing the axis, direction, and the cycle.
+                Axis can be either 'x' or 'y'. Direction can be 'left', or 'right'.
+                Cycle is 'stress'.
+            1D numpy.ndarray of type float
+                Extension values of release cycles in m.
+            1D numpy.ndarray of type float
+                Force values of release cycles in N.
+            1D numpy.ndarray of type str
+                (str, str, str), containing the axis, direction, and the cycle.
+                Axis can be either 'x' or 'y'. Direction can be 'left', or 'right'.
+                Cycle is 'release'.
         """
-        str_rls_pairs = self.stress_release_pairs(axis=axis,
-                                                  direction=direction,
-                                                  i=i,
-                                                  decimate=decimate,
-                                                  slices=True)
+        pairs = self.stress_release_pairs(i=i, axis=axis, direction=direction,
+                                          decimate=decimate, slices=True)
 
         # Get time, extension, and force for all stress/release pairs. Set the
         # start to the first stress and the stop to the last release cycle
-        start = str_rls_pairs['idcs']['stress'][0].start
-        stop = str_rls_pairs['idcs']['release'][-1].stop
+        start = pairs['stress']['idx'][0].start
+        stop = pairs['release']['idx'][-1].stop
         samples = slice(start, stop)
 
         t = self.timevector[samples]
-        ef = self.force_extension(samples=samples, twoD=twoD, posmin=posmin,
+        fe = self.force_extension(samples=samples, twoD=twoD, posmin=posmin,
                                   dXYZ_factors=dXYZ_factors,
                                   fXYZ_factors=fXYZ_factors)  # m,N
 
-        str_rls_pairs['time'] = {'stress': [], 'release': []}
-        str_rls_pairs['extension'] = {'stress': [], 'release': []}
-        str_rls_pairs['force'] = {'stress': [], 'release': []}
-        # Get all stress/release extension/force data pairs
+        # Separate all data into stress/release pairs
+        data = {}
         for cycle in ['stress', 'release']:
-            idcs = str_rls_pairs['idcs'][cycle]
+            data[cycle] = {}
+            data[cycle]['time'] = []
+            for key in fe:
+                data[cycle][key] = []
+            idcs = pairs[cycle]['idx']
             for idx in idcs:
                 i = slice(idx.start - start, idx.stop - start, idx.step)
-                str_rls_pairs['time'][cycle].append(t[i])
-                str_rls_pairs['extension'][cycle].append(ef[i,0])
-                str_rls_pairs['force'][cycle].append(ef[i,1])
+                data[cycle]['time'].append(t[i])
+                for key in fe:
+                    data[cycle][key].append(fe[key][i])
 
-        return str_rls_pairs
+        #pairs['settings'] = { 'i': i,
+        #                      'axis': axis,
+        #                      'direction': direction,
+        #                      'decimate': decimate,
+        #                      'twoD': twoD,
+        #                      'posmin': posmin,
+        #                      'dXYZ_factors': dXYZ_factors,
+        #                      'fXYZ_factors': fXYZ_factors }
+
+        return data
 
 
-    def samples(self, i, cycle=None, axis=None, direction=None, decimate=None):
+    def samples(self, i=None, cycle=None, axis=None, direction=None,
+                decimate=None):
         """
         Get index of samples to be used for functions displacement, force, etc.
 
@@ -627,14 +624,11 @@ class Tether(Evaluator):
             # release only
             start = stop
 
-        str_rls_pair = self.stress_release_pairs(axis=axis,
-                                                 direction=direction,
-                                                 i=i,
-                                                 decimate=decimate,
-                                                 slices=False)
+        pairs = self.stress_release_pairs(i=i, axis=axis, direction=direction,
+                                          decimate=decimate, slices=True)
 
-        idx_start = str_rls_pair['idcs'][start][0,0]
-        idx_stop = str_rls_pair['idcs'][stop][0,1]
+        idx_start = pairs[start]['idx'][0].start
+        idx_stop = pairs[stop]['idx'][-1].stop
         idx = slice(idx_start, idx_stop, decimate)
         return idx
 
@@ -796,15 +790,27 @@ class Tether(Evaluator):
         # 2D or 3D calculation of the distance in Z
         if twoD:
             psdXYZ[:, Z] = 0.0
+        displXYZ = displacementXYZ(calibration, psdXYZ, positionZ=positionZ,
+                                   dXYZ_factors=dXYZ_factors)
         distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ,
-                              dXYZ_factors=dXYZ_factors)
+                              displXYZ=displXYZ, dXYZ_factors=dXYZ_factors)
         dist = distance(distXYZ, positionXY, posmin=posmin)
         e = extension(dist, calibration.radius)
 
         fXYZ = forceXYZ(calibration, psdXYZ, positionZ,
                         dXYZ_factors=dXYZ_factors, fXYZ_factors=fXYZ_factors)
         f = force(fXYZ, positionXY, posmin=posmin)
-        return np.c_[e, f]
+
+        return {
+            'extension': e,
+            'force': f,
+            'psdXYZ': psdXYZ,
+            'displacementXYZ': displXYZ,
+            'forceXYZ': fXYZ,
+            'positionXYZ': positionXYZ,
+            'distanceXYZ': distXYZ
+        }
+
 
     def info(self, i=0):
         print_info(self, i=i)
@@ -888,11 +894,11 @@ XYZ = hp.slicify([X, Y, Z])
 
 
 def print_info(tether, i=0):
-    stress_release_pair = tether.stress_release_pairs(i=i)
-    stress = stress_release_pair['idcs']['stress']
-    release = stress_release_pair['idcs']['release']
-    stress_info = stress_release_pair['infos']['stress']
-    release_info = stress_release_pair['infos']['release']
+    pairs = tether.stress_release_pairs(i=i)
+    stress = pairs['stress']['idx'][0]
+    release = pairs['release']['idx'][0]
+    stress_info = pairs['stress']['info'][0]
+    release_info = pairs['release']['info'][0]
     resolution = tether.resolution
     start_stress_t = stress[0].start / resolution
     stop_stress_t = stress[0].stop / resolution
@@ -1001,8 +1007,8 @@ def force(forceXYZ, positionXY, posmin=10e-9, sign_axes=None):
     return force
 
 
-def distanceXYZ(calibration, psdXYZ, positionXYZ, radius=None, focalshift=None,
-                clip_Z=True, dXYZ_factors=None):
+def distanceXYZ(calibration, psdXYZ, positionXYZ, displXYZ=None, radius=None,
+                focalshift=None, clip_Z=True, dXYZ_factors=None):
     """
     Distance of the attachment point to the bead center as a 3D vector.
     positionXYZ, displacementXYZ and radius need to have the same unit.
@@ -1033,8 +1039,9 @@ def distanceXYZ(calibration, psdXYZ, positionXYZ, radius=None, focalshift=None,
         radius = calibration.radius
     positionZ = positionXYZ[:,2]
 
-    displXYZ = displacementXYZ(calibration, psdXYZ, positionZ=positionZ,
-                               dXYZ_factors=dXYZ_factors)
+    if displXYZ is None:
+        displXYZ = displacementXYZ(calibration, psdXYZ, positionZ=positionZ,
+                                   dXYZ_factors=dXYZ_factors)
 
     # distance, point of attachment of DNA
     # displacement, displacement of bead out of trap center radius
