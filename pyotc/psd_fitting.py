@@ -1821,7 +1821,7 @@ class PSDFit(object):
             self.print_ac_results()
 
         if plot_fits:
-            fig.show()
+            plt.show(fig)
 
     def plot_fits(self,
                   names=None,

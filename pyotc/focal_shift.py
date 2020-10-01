@@ -214,7 +214,7 @@ def get_focal_shift(heights,  # in um
                                 axis=plt_axis)
 
         add_plot_to_figure(fig, heights, minimizer.fcn_eval, fmt='-', axis=ax)
-        fig.show()
+        plt.show(fig)
     if minimizer.success:
         fs = minimizer.params['focal_shift'].value
         dfs = minimizer.params['focal_shift'].stderr
