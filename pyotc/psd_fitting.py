@@ -1014,7 +1014,7 @@ class PSDFit(object):
 
         self.fit_kwargs = {}
         self.fits = {}
-        
+
         self.conf_level = conf_level
 
         if bounds is not None:
@@ -1415,7 +1415,7 @@ class PSDFit(object):
                              )
 
             self.fits.update({name: fres})
-            
+
         if fitreport and not verbose:
             report_fit(minimizer, show_correl=False)
 
@@ -1807,8 +1807,7 @@ class PSDFit(object):
                 self.calc_pc_results(names=name, verbose=verbose)
 
         if plot_fits:
-            self.plot_fits(names=names,
-                           plot_axis=plot_axis)
+            fig = self.plot_fits(names=names, plot_axis=plot_axis)
 
         if fitreport or verbose:
             print('========================================================')
@@ -1822,7 +1821,7 @@ class PSDFit(object):
             self.print_ac_results()
 
         if plot_fits:
-            plt.show()
+            fig.show()
 
     def plot_fits(self,
                   names=None,
