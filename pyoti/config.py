@@ -13,6 +13,8 @@ import appdirs
 
 pyoti_config_dirs = [os.path.join(os.path.dirname(globals()['__file__']),
                                   'configs')]
+pyoti_config_dirs.append(os.path.join(os.path.dirname(globals()['__file__']),
+                                      'configs/record'))
 site_config_dirs = appdirs.AppDirs('pyoti',
                                    multipath=True).site_config_dir.split(':')
 user_config_dirs = appdirs.AppDirs('pyoti',
