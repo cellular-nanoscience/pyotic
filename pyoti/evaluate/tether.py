@@ -621,6 +621,16 @@ class Tether(Evaluator):
         idx = slice(idx_start, idx_stop, decimate)
         return idx
 
+
+    def get_data(self, i=None, cycle=None, axis=None, direction=None,
+                 decimate=None, samples=None, **kwargs):
+        if samples is None:
+            samples = self.get_samples(i=i, cycle=cycle, axis=axis,
+                                       direction=direction, decimate=decimate)
+        data = super().get_data(**kwargs, samples=samples)
+        return data
+
+
     def displacementXYZ(self, samples=None, dXYZ_factors=None):
         """
         Displacement in m with height dependent calibration factors for X, Y
@@ -636,6 +646,7 @@ class Tether(Evaluator):
                                   dXYZ_factors=dXYZ_factors)
         return dispXYZ
 
+
     def forceXYZ(self, samples=None, dXYZ_factors=None, fXYZ_factors=None):
         """
         Force in N, that is acting on the tether
@@ -648,6 +659,7 @@ class Tether(Evaluator):
         fXYZ = forceXYZ(calibration, psdXYZ, positionZ,
                         dXYZ_factors=dXYZ_factors, fXYZ_factors=fXYZ_factors)
         return fXYZ
+
 
     def force(self, samples=None, twoD=False, posmin=10e-9, dXYZ_factors=None,
               fXYZ_factors=None):
