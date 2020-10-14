@@ -625,8 +625,8 @@ class Tether(Evaluator):
     def get_data(self, i=None, cycle=None, axis=None, direction=None,
                  decimate=None, samples=None, **kwargs):
         if samples is None:
-            samples = self.get_samples(i=i, cycle=cycle, axis=axis,
-                                       direction=direction, decimate=decimate)
+            samples = self.samples(i=i, cycle=cycle, axis=axis,
+                                   direction=direction, decimate=decimate)
         data = super().get_data(**kwargs, samples=samples)
         return data
 
