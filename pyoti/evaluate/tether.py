@@ -646,7 +646,8 @@ class Tether(Evaluator):
         positionZ = data[:, [3]]
         calibration = self.calibration
 
-        dispXYZ = displacementXYZ(calibration, psdXYZ, positionZ,
+        dispXYZ = displacementXYZ(psdXYZ, calibration=calibration,
+                                  positionZ=positionZ,
                                   dXYZ_factors=dXYZ_factors)
         return dispXYZ
 
@@ -660,7 +661,7 @@ class Tether(Evaluator):
         positionZ = data[:, [3]]
         calibration = self.calibration
 
-        fXYZ = forceXYZ(calibration, psdXYZ, positionZ,
+        fXYZ = forceXYZ(psdXYZ, calibration=calibration, positionZ=positionZ,
                         dXYZ_factors=dXYZ_factors, fXYZ_factors=fXYZ_factors)
         return fXYZ
 
@@ -694,7 +695,7 @@ class Tether(Evaluator):
         if twoD:
             psdXYZ[:, Z] = 0.0
 
-        fXYZ = forceXYZ(calibration, psdXYZ, positionZ,
+        fXYZ = forceXYZ(psdXYZ, calibration=calibration, positionZ=positionZ,
                         dXYZ_factors=dXYZ_factors, fXYZ_factors=fXYZ_factors)
         f = force(fXYZ, positionXY, posmin=posmin)
         return f
@@ -709,7 +710,7 @@ class Tether(Evaluator):
         positionXYZ = data[:, 3:6]
         calibration = self.calibration
 
-        distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ,
+        distXYZ = distanceXYZ(psdXYZ, positionXYZ, calibration=calibration,
                               dXYZ_factors=dXYZ_factors)
         return distXYZ
 
@@ -741,7 +742,7 @@ class Tether(Evaluator):
         if twoD:
             psdXYZ[:, Z] = 0.0
 
-        distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ,
+        distXYZ = distanceXYZ(psdXYZ, positionXYZ, calibration=calibration,
                               dXYZ_factors=dXYZ_factors)
         dist = distance(distXYZ, positionXY, posmin=posmin)
         return dist
@@ -842,14 +843,16 @@ class Tether(Evaluator):
         # 2D or 3D calculation of the distance in Z
         if twoD:
             psdXYZ[:, Z] = 0.0
-        displXYZ = displacementXYZ(calibration, psdXYZ, positionZ=positionZ,
+        displXYZ = displacementXYZ(psdXYZ, calibration=calibration,
+                                   positionZ=positionZ,
                                    dXYZ_factors=dXYZ_factors)
-        distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ,
-                              displXYZ=displXYZ, dXYZ_factors=dXYZ_factors)
+        distXYZ = distanceXYZ(psdXYZ, positionXYZ, displXYZ=displXYZ,
+                              calibration=calibration,
+                              dXYZ_factors=dXYZ_factors)
         dist = distance(distXYZ, positionXY, posmin=posmin)
         e = extension(dist, calibration.radius)
 
-        fXYZ = forceXYZ(calibration, psdXYZ, positionZ,
+        fXYZ = forceXYZ(psdXYZ, calibration=calibration, positionZ=positionZ,
                         dXYZ_factors=dXYZ_factors, fXYZ_factors=fXYZ_factors)
         f = force(fXYZ, positionXY, posmin=posmin)
 
@@ -988,12 +991,16 @@ def print_info(tether, i=0):
                                     * tether.calibration.focalshift))
 
 
-def displacementXYZ(calibration, psdXYZ, positionZ=0.0, dXYZ_factors=None):
+def displacementXYZ(psdXYZ, calibration=None, positionZ=0.0, beta=None,
+                    dXYZ_factors=None):
     """
     Displacement in m with height dependent calibration factors for X, Y
     and Z.
     """
-    dispXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
+    if calibration is not None:
+        dispXYZ = calibration.displacement(psdXYZ, positionZ=positionZ)
+    else:
+        dispXYZ = psdXYZ * beta
 
     # Optionally use correctur factors for the calculated displacement
     dXYZ_factors = 1 if dXYZ_factors is None else dXYZ_factors
@@ -1003,14 +1010,18 @@ def displacementXYZ(calibration, psdXYZ, positionZ=0.0, dXYZ_factors=None):
     return dispXYZ
 
 
-def forceXYZ(calibration, psdXYZ, positionZ, dXYZ_factors=None,
-             fXYZ_factors=None):
+def forceXYZ(psdXYZ, calibration=None, positionZ=0.0, beta=None, kappa=None,
+             dXYZ_factors=None, fXYZ_factors=None):
     """
     Force acting on the bead
     """
-    dispXYZ = displacementXYZ(calibration, psdXYZ, positionZ=positionZ,
+    dispXYZ = displacementXYZ(psdXYZ, calibration=calibration,
+                              positionZ=positionZ, beta=beta,
                               dXYZ_factors=dXYZ_factors)
-    fXYZ = calibration.force(dispXYZ, positionZ=positionZ)
+    if calibration is not None:
+        fXYZ = calibration.force(dispXYZ, positionZ=positionZ)
+    else:
+        fXYZ = dispXYZ * kappa
 
     # Optionally use correctur factors for the calculated force
     fXYZ_factors = 1 if fXYZ_factors is None else fXYZ_factors
@@ -1067,8 +1078,9 @@ def force(forceXYZ, positionXY, posmin=10e-9, sign_axes=None):
     return force
 
 
-def distanceXYZ(calibration, psdXYZ, positionXYZ, displXYZ=None, radius=None,
-                focalshift=None, clip_Z=True, dXYZ_factors=None):
+def distanceXYZ(psdXYZ, positionXYZ, displXYZ=None, calibration=None,
+                beta=None, radius=None, focalshift=None, clip_Z=True,
+                dXYZ_factors=None):
     """
     Distance of the attachment point to the bead center as a 3D vector.
     positionXYZ, displacementXYZ and radius need to have the same unit.
@@ -1100,7 +1112,8 @@ def distanceXYZ(calibration, psdXYZ, positionXYZ, displXYZ=None, radius=None,
     positionZ = positionXYZ[:,2]
 
     if displXYZ is None:
-        displXYZ = displacementXYZ(calibration, psdXYZ, positionZ=positionZ,
+        displXYZ = displacementXYZ(psdXYZ, calibration=calibration,
+                                   positionZ=positionZ, beta=beta,
                                    dXYZ_factors=dXYZ_factors)
 
     # distance, point of attachment of DNA

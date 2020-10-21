@@ -197,7 +197,8 @@ class IRotation(GraphicalMod):
         positionZ = data_based[:, hp.slicify(5)]
 
         # calculate extension
-        distanceXYZ = tr.distanceXYZ(calibration, psdXYZ, positionXYZ)
+        distanceXYZ = tr.distanceXYZ(psdXYZ, positionXYZ,
+                                     calibration=calibration)
         distance = tr.distance(distanceXYZ, positionXY)
         extension = tr.extension(distance, calibration.radius)
 
@@ -206,7 +207,8 @@ class IRotation(GraphicalMod):
         # Get the force acting in the same direction as the displacement
         fXYZ = calibration.force(displacementXYZ, positionZ=positionZ)
 
-        force = tr.force(tr.forceXYZ(calibration, psdXYZ, positionZ),
+        force = tr.force(tr.forceXYZ(psdXYZ, calibration=calibration,
+                                     positionZ=positionZ),
                          positionXY)
         force = {'3D': force,
                  'X': fXYZ[:, 0],
