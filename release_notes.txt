@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.17.0
+ Many improvements. See git commit history.
 ** Version 0.16.0
  Add option to decimate the baseline in Modification Baseline.
 Other improvements.
