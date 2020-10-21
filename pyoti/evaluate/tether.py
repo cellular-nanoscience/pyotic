@@ -710,7 +710,8 @@ class Tether(Evaluator):
         positionXYZ = data[:, 3:6]
         calibration = self.calibration
 
-        distXYZ = distanceXYZ(psdXYZ, positionXYZ, calibration=calibration,
+        distXYZ = distanceXYZ(positionXYZ, psdXYZ=psdXYZ,
+                              calibration=calibration,
                               dXYZ_factors=dXYZ_factors)
         return distXYZ
 
@@ -742,7 +743,8 @@ class Tether(Evaluator):
         if twoD:
             psdXYZ[:, Z] = 0.0
 
-        distXYZ = distanceXYZ(psdXYZ, positionXYZ, calibration=calibration,
+        distXYZ = distanceXYZ(positionXYZ, psdXYZ=psdXYZ,
+                              calibration=calibration,
                               dXYZ_factors=dXYZ_factors)
         dist = distance(distXYZ, positionXY, posmin=posmin)
         return dist
@@ -843,10 +845,10 @@ class Tether(Evaluator):
         # 2D or 3D calculation of the distance in Z
         if twoD:
             psdXYZ[:, Z] = 0.0
-        displXYZ = displacementXYZ(psdXYZ, calibration=calibration,
-                                   positionZ=positionZ,
-                                   dXYZ_factors=dXYZ_factors)
-        distXYZ = distanceXYZ(psdXYZ, positionXYZ, displXYZ=displXYZ,
+        dispXYZ = displacementXYZ(psdXYZ, calibration=calibration,
+                                  positionZ=positionZ,
+                                  dXYZ_factors=dXYZ_factors)
+        distXYZ = distanceXYZ(positionXYZ, dispXYZ=dispXYZ,
                               calibration=calibration,
                               dXYZ_factors=dXYZ_factors)
         dist = distance(distXYZ, positionXY, posmin=posmin)
@@ -1010,14 +1012,16 @@ def displacementXYZ(psdXYZ, calibration=None, positionZ=0.0, beta=None,
     return dispXYZ
 
 
-def forceXYZ(psdXYZ, calibration=None, positionZ=0.0, beta=None, kappa=None,
-             dXYZ_factors=None, fXYZ_factors=None):
+def forceXYZ(psdXYZ=None, dispXYZ=None, calibration=None, positionZ=0.0,
+             beta=None, kappa=None, dXYZ_factors=None, fXYZ_factors=None):
     """
     Force acting on the bead
     """
-    dispXYZ = displacementXYZ(psdXYZ, calibration=calibration,
-                              positionZ=positionZ, beta=beta,
-                              dXYZ_factors=dXYZ_factors)
+    if dispXYZ is None:
+        dispXYZ = displacementXYZ(psdXYZ, calibration=calibration,
+                                  positionZ=positionZ, beta=beta,
+                                  dXYZ_factors=dXYZ_factors)
+
     if calibration is not None:
         fXYZ = calibration.force(dispXYZ, positionZ=positionZ)
     else:
@@ -1078,7 +1082,7 @@ def force(forceXYZ, positionXY, posmin=10e-9, sign_axes=None):
     return force
 
 
-def distanceXYZ(psdXYZ, positionXYZ, displXYZ=None, calibration=None,
+def distanceXYZ(positionXYZ, psdXYZ=None, dispXYZ=None, calibration=None,
                 beta=None, radius=None, focalshift=None, clip_Z=True,
                 dXYZ_factors=None):
     """
@@ -1111,17 +1115,17 @@ def distanceXYZ(psdXYZ, positionXYZ, displXYZ=None, calibration=None,
         radius = calibration.radius
     positionZ = positionXYZ[:,2]
 
-    if displXYZ is None:
-        displXYZ = displacementXYZ(psdXYZ, calibration=calibration,
-                                   positionZ=positionZ, beta=beta,
-                                   dXYZ_factors=dXYZ_factors)
+    if dispXYZ is None:
+        dispXYZ = displacementXYZ(psdXYZ, calibration=calibration,
+                                  positionZ=positionZ, beta=beta,
+                                  dXYZ_factors=dXYZ_factors)
 
     # distance, point of attachment of DNA
     # displacement, displacement of bead out of trap center radius
     distanceXYZ = positionXYZ.copy()
     # distance from attachment point to center of bead
     # attachmentXY - displacementXY
-    distanceXYZ[:, 0:2] -= displXYZ[:, 0:2]
+    distanceXYZ[:, 0:2] -= dispXYZ[:, 0:2]
     # Direction of distance vector is from attachment point to the bead center
     distanceXYZ[:, 0:2] *= -1
 
@@ -1135,11 +1139,11 @@ def distanceXYZ(psdXYZ, positionXYZ, displXYZ=None, calibration=None,
     distanceXYZ[idx_free, 2] = (- positionXYZ[idx_free, 2] * focalshift
                                 + radius
                                 # distanceZ + radius + displacementZ
-                                + displXYZ[idx_free, 2])
+                                + dispXYZ[idx_free, 2])
     distanceXYZ[idx_touch, 2] = (- positionXYZ[idx_touch, 2]
                                  + radius
                                  # distanceZ + radius + displacementZ
-                                 + displXYZ[idx_touch, 2])
+                                 + dispXYZ[idx_touch, 2])
 
     if clip_Z:
         distanceXYZ[:, 2] = distanceXYZ[:, 2].clip(min=radius)

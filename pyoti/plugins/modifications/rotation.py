@@ -197,7 +197,7 @@ class IRotation(GraphicalMod):
         positionZ = data_based[:, hp.slicify(5)]
 
         # calculate extension
-        distanceXYZ = tr.distanceXYZ(psdXYZ, positionXYZ,
+        distanceXYZ = tr.distanceXYZ(positionXYZ, psdXYZ=psdXYZ,
                                      calibration=calibration)
         distance = tr.distance(distanceXYZ, positionXY)
         extension = tr.extension(distance, calibration.radius)
