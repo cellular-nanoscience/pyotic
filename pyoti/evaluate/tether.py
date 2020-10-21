@@ -7,6 +7,8 @@ Created on Fri Mar 11 13:36:39 2016
 import matplotlib.pyplot as plt
 import numpy as np
 
+from collections.abc import Iterable
+
 from . import signal as sn
 from .. import helpers as hp
 from .evaluate import Evaluator
@@ -78,7 +80,6 @@ class Tether(Evaluator):
                          resolution_sf=resolution_sf,
                          filter_time_sf=filter_time_sf)
 
-        self.fe_figure = None
 
     def _sections(self, axis=None, direction=None, cycle=None,
                   concat_direction=False, concat_cycle=False, info=False,
@@ -192,8 +193,10 @@ class Tether(Evaluator):
         extrema.sort()
         return extrema
 
+
     def stress_release_pairs(self, i=None, axis=None, direction=None,
-                             slices=True, decimate=None, **kwargs):
+                             slices=True, decimate=None, reduce_list=False,
+                             **kwargs):
         """
         Calculate start/stop indices (as segments or slices) of stress/release
         cycle pairs of the requested axis and direction.
@@ -273,22 +276,31 @@ class Tether(Evaluator):
 
         # Get the maximum number of stress release pairs, prevent index
         # overflow, and allow for negative indices
-        stop = len(pairs['stress']['idx'])
-        if i is not None:
-            if i < 0: i = stop + i
-            i = min(max(0, i), stop - 1)
-            s = slice(i, i + 1)
+        if i is None:
+            idx = slice(None)
         else:
-            s = slice(0, stop)
+            if isinstance(i, Iterable):
+                idx = i
+            else:
+                stop = len(pairs['stress']['idx'])
+                if i < 0: i = stop + i
+                i = min(max(0, i), stop - 1)
+                idx = [i]
 
-        # Convert lists into arrays and segments into slices
+        # Select idx and convert lists into arrays and segments into slices
         for cycle in ['stress', 'release']:
-            pairs[cycle]['idx'] = np.concatenate(pairs[cycle]['idx'])[s]
-            pairs[cycle]['info'] = np.concatenate(pairs[cycle]['info'])[s]
+            for sort in ['idx', 'info']:
+                pairs[cycle][sort] = np.concatenate(pairs[cycle][sort])[idx]
             if slices:
                 pairs[cycle]['idx'] = \
                     sn.idx_segments_to_slices(pairs[cycle]['idx'],
                                               decimate=decimate)
+
+        # If only one pair, remove list and select only pair
+        if reduce_list and len(pairs['stress']['idx']) == 1:
+            for cycle in ['stress', 'release']:
+                for sort in ['idx', 'info']:
+                    pairs[cycle][sort] = pairs[cycle][sort][0]
 
         return pairs
 
@@ -461,67 +473,26 @@ class Tether(Evaluator):
 
         return fig
 
-    def force_extension_pair(self, i, axis=None, direction=None, decimate=None,
-                             twoD=False, posmin=10e-9, dXYZ_factors=None,
-                             fXYZ_factors=None):
-        """
-        Calculate the force extension pair with index `i`.
-
-        Parameters
-        ----------
-        i : int
-            Index of the force_extension pair to be returned.
-        axis : str
-            See method `self.stress_release_pairs()`.
-        direction : str
-            See method `self.stress_release_pairs()`.
-        decimate : int
-            See method `self.stress_release_pairs()`.
-        posmin : float
-            The `posmin` is used to decide wether the magnitude of the force
-            has to be corrected with the sign depending on the position. The
-            `posmin` sets the value the position signal has to be deflected at
-            least to be counted as active pulling on the bead. The value should
-            at least be >= 12 times the standard deviation of the unexcited
-            position signal.
-            Smaller values could (depending on the number of datapoints)
-            possibly lead to falsly detected excitation of the signal.
-
-        Returns
-        -------
-        1D numpy.ndarray of type float
-            Extension values of stress cycles in m.
-        1D numpy.ndarray of type float
-            Force values of stress cycles in N.
-        1D numpy.ndarray of type str
-            (str, str, str), containing the axis, direction, and the cycle.
-            Axis can be either 'x' or 'y'. Direction can be 'left', or 'right'.
-            Cycle is 'stress'.
-        1D numpy.ndarray of type float
-            Extension values of release cycles in m.
-        1D numpy.ndarray of type float
-            Force values of release cycles in N.
-        1D numpy.ndarray of type str
-            (str, str, str), containing the axis, direction, and the cycle.
-            Axis can be either 'x' or 'y'. Direction can be 'left', or 'right'.
-            Cycle is 'release'.
-        """
-        pair = self.force_extension_pairs(i=i, axis=axis, direction=direction,
-                                          decimate=decimate, twoD=twoD,
-                                          posmin=posmin,
-                                          dXYZ_factors=dXYZ_factors,
-                                          fXYZ_factors=fXYZ_factors)
-
-        for cycle in ['stress', 'release']:
-            for key in pair[cycle]:
-                pair[cycle][key] = pair[cycle][key][0]
-        return pair
 
     def force_extension_pairs(self, i=None, axis=None, direction=None,
                               decimate=None, twoD=False, posmin=10e-9,
-                              dXYZ_factors=None, fXYZ_factors=None):
+                              dXYZ_factors=None, fXYZ_factors=None,
+                              reduce_list=False, return_calibration=False,
+                              return_settings=False):
+        return self.data_pairs(i=i, axis=axis, direction=direction,
+                               decimate=decimate, fe_data=True, twoD=twoD,
+                               posmin=posmin, dXYZ_factors=dXYZ_factors,
+                               fXYZ_factors=fXYZ_factors,
+                               reduce_list=reduce_list,
+                               return_calibration=return_calibration,
+                               return_settings=return_settings)
+
+    def data_pairs(self, i=None, axis=None, direction=None, decimate=None,
+                   fe_data=False, twoD=False, posmin=10e-9, dXYZ_factors=None,
+                   fXYZ_factors=None, reduce_list=False,
+                   return_calibration=False, return_settings=False):
         """
-        Return a generator for force extension values of stress release pairs.
+        Return a dictionary of force extension values of stress release pairs.
 
         Parameters
         ----------
@@ -543,7 +514,7 @@ class Tether(Evaluator):
             Smaller values could (depending on the number of datapoints)
             possibly lead to falsly detected excitation of the signal.
 
-        Yields
+        Returns
         ------
         dict
             1D numpy.ndarray of type float
@@ -564,7 +535,8 @@ class Tether(Evaluator):
                 Cycle is 'release'.
         """
         pairs = self.stress_release_pairs(i=i, axis=axis, direction=direction,
-                                          decimate=decimate, slices=True)
+                                          decimate=decimate, slices=True,
+                                          reduce_list=False)
 
         # Get time, extension, and force for all stress/release pairs. Set the
         # start to the first stress and the stop to the last release cycle
@@ -573,25 +545,55 @@ class Tether(Evaluator):
         samples = slice(start, stop)
 
         t = self.timevector[samples]
-        fe = self.force_extension(samples=samples, twoD=twoD, posmin=posmin,
-                                  dXYZ_factors=dXYZ_factors,
-                                  fXYZ_factors=fXYZ_factors)  # m,N
+        keys = ['psdXYZ', 'positionXYZ']
+        if fe_data:
+            _data = self.force_extension(samples=samples, twoD=twoD,
+                                         posmin=posmin,
+                                         dXYZ_factors=dXYZ_factors,
+                                         fXYZ_factors=fXYZ_factors,
+                                         return_calibration=return_calibration)
+            keys = keys + ['extension', 'force']
+        else:
+            _data = self.raw_data(samples=samples,
+                                  return_calibration=return_calibration)
 
         # Separate all data into stress/release pairs
         data = {}
+
         for cycle in ['stress', 'release']:
             data[cycle] = {}
             data[cycle]['time'] = []
-            for key in fe:
+            for key in keys:
                 data[cycle][key] = []
             idcs = pairs[cycle]['idx']
             for idx in idcs:
                 i = slice(idx.start - start, idx.stop - start, idx.step)
                 data[cycle]['time'].append(t[i])
-                for key in fe:
-                    data[cycle][key].append(fe[key][i])
+                for key in keys:
+                    data[cycle][key].append(_data[key][i])
+
+        # If only one pair, remove list and select only pair
+        if reduce_list and len(data['stress']['time']) == 1:
+            for cycle in ['stress', 'release']:
+                for key in data[cycle]:
+                    data[cycle][key] = data[cycle][key][0]
+
+        if return_calibration:
+            data['calibration'] = _data['calibration']
+        if return_settings:
+            data['settings'] = {
+                'i': i,
+                'axis': axis,
+                'direction': direction,
+                'decimate': decimate,
+                'twoD': twoD,
+                'posmin': posmin,
+                'dXYZ_factors': dXYZ_factors,
+                'fXYZ_factors': fXYZ_factors
+            }
 
         return data
+
 
     def samples(self, i=None, cycle=None, axis=None, direction=None,
                 decimate=None):
@@ -624,7 +626,9 @@ class Tether(Evaluator):
 
     def get_data(self, i=None, cycle=None, axis=None, direction=None,
                  decimate=None, samples=None, **kwargs):
-        if samples is None:
+        if samples is None and not (i is None and cycle is None
+                                    and axis is None and direction is None
+                                    and decimate is None):
             samples = self.samples(i=i, cycle=cycle, axis=axis,
                                    direction=direction, decimate=decimate)
         data = super().get_data(**kwargs, samples=samples)
@@ -695,6 +699,7 @@ class Tether(Evaluator):
         f = force(fXYZ, positionXY, posmin=posmin)
         return f
 
+
     def distanceXYZ(self, samples=None, dXYZ_factors=None):
         """
         Distance of the attachment point to the bead center as a 3D vector.
@@ -707,6 +712,7 @@ class Tether(Evaluator):
         distXYZ = distanceXYZ(calibration, psdXYZ, positionXYZ,
                               dXYZ_factors=dXYZ_factors)
         return distXYZ
+
 
     def distance(self, samples=None, twoD=False, posmin=10e-9,
                  dXYZ_factors=None):
@@ -740,6 +746,7 @@ class Tether(Evaluator):
         dist = distance(distXYZ, positionXY, posmin=posmin)
         return dist
 
+
     def extension(self, samples=None, twoD=False, posmin=10e-9):
         """
         Extension of the tethered molecule in m.
@@ -762,8 +769,51 @@ class Tether(Evaluator):
         e = extension(dist, calibration.radius)
         return e
 
-    def force_extension(self, samples=None, twoD=False, posmin=10e-9,
-                        dXYZ_factors=None, fXYZ_factors=None):
+
+    def raw_data(self, i=None, cycle=None, axis=None, direction=None,
+                 samples=None, return_calibration=False,
+                 return_settings=False):
+        # Get extension and force (in a fast way)
+        data = self.get_data(i=i, cycle=cycle, axis=axis, direction=direction,
+                             traces=['psdXYZ', 'positionXYZ'], samples=samples)
+        psdXYZ = data[:, 0:3]
+        positionXYZ = data[:, 3:6]
+
+        raw_data = {
+            'psdXYZ': psdXYZ,
+            'positionXYZ': positionXYZ
+        }
+        if return_calibration:
+            calibration = self.calibration
+            raw_data['calibration'] = {
+                'beta0': calibration._beta[0],
+                'betam': calibration._beta[1],
+                'kappa0': calibration._kappa[0],
+                'kappam': calibration._kappa[1],
+                'dsurf': calibration.dsurf,
+                'psurf': calibration.psurf,
+                'touchdown': calibration.touchdown,
+                'radius': calibration.radius,
+                'correct_radius': calibration.correct_radius,
+                'corrfactor': calibration.calibsource.corrfactor,
+                'radiusspec': calibration.calibsource.radiusspec,
+                'focalshift': calibration.focalshift
+            }
+        if return_settings:
+            raw_data['settings'] = {
+                'i': i,
+                'cycle': cycle,
+                'axis': axis,
+                'direction': direction,
+                'samples': samples,
+            }
+        return raw_data
+
+
+    def force_extension(self, i=None, cycle=None, axis=None, direction=None,
+                        samples=None, twoD=False, posmin=10e-9,
+                        dXYZ_factors=None, fXYZ_factors=None,
+                        return_calibration=False, return_settings=False):
         """
         Extension (m, first column) of and force (N, second column) acting
         on the tethered molecule (2D numpy.ndarray).
@@ -780,12 +830,13 @@ class Tether(Evaluator):
             Smaller values could (depending on the number of datapoints)
             possibly lead to falsly detected excitation of the signal.
         """
-        # Get extension and force (in a fast way)
-        data = self.get_data(traces=['psdXYZ', 'positionXYZ'], samples=samples)
-        psdXYZ = data[:, 0:3]
-        positionXYZ = data[:, 3:6]
+        data = self.raw_data(i=i, cycle=cycle, axis=axis,
+                             direction=direction, samples=samples,
+                             return_calibration=return_calibration)
+        psdXYZ = data['psdXYZ']
+        positionXYZ = data['positionXYZ']
         positionXY = positionXYZ[:, 0:2]
-        positionZ = data[:, [5]]
+        positionZ = positionXYZ[:, [2]]
         calibration = self.calibration
 
         # 2D or 3D calculation of the distance in Z
@@ -802,15 +853,23 @@ class Tether(Evaluator):
                         dXYZ_factors=dXYZ_factors, fXYZ_factors=fXYZ_factors)
         f = force(fXYZ, positionXY, posmin=posmin)
 
-        return {
+        data.update({
             'extension': e,
-            'force': f,
-            'psdXYZ': psdXYZ,
-            'displacementXYZ': displXYZ,
-            'forceXYZ': fXYZ,
-            'positionXYZ': positionXYZ,
-            'distanceXYZ': distXYZ
-        }
+            'force': f
+        })
+        if return_settings:
+            data['settings'] = {
+                'i': i,
+                'cycle': cycle,
+                'axis': axis,
+                'direction': direction,
+                'samples': samples,
+                'twoD': twoD,
+                'posmin': posmin,
+                'dXYZ_factors': dXYZ_factors,
+                'fXYZ_factors': fXYZ_factors
+            }
+        return data
 
 
     def info(self, i=0):
