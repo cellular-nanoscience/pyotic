@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.17.1
+ Make paramaters 'calibration' and 'psdXYZ' in functions of module pyoti.evaluate.tether optional.
 ** Version 0.17.0
  Many improvements. See git commit history.
 ** Version 0.16.0
