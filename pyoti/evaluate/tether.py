@@ -543,7 +543,6 @@ class Tether(Evaluator):
         start = pairs['stress']['idx'][0].start
         stop = pairs['release']['idx'][-1].stop
         samples = slice(start, stop)
-
         t = self.timevector[samples]
         keys = ['psdXYZ', 'positionXYZ']
         if fe_data:
@@ -552,7 +551,7 @@ class Tether(Evaluator):
                                          dXYZ_factors=dXYZ_factors,
                                          fXYZ_factors=fXYZ_factors,
                                          return_calibration=return_calibration)
-            keys = keys + ['extension', 'force']
+            keys = ['extension', 'force'] + keys
         else:
             _data = self.raw_data(samples=samples,
                                   return_calibration=return_calibration)
