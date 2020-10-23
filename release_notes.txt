@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.17.2
+ Correct order of keys of tether.force_exension_pairs() return values to have backwards compatibility with other functions.
 ** Version 0.17.1
  Make paramaters 'calibration' and 'psdXYZ' in functions of module pyoti.evaluate.tether optional.
 ** Version 0.17.0
