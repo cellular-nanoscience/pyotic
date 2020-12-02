@@ -976,9 +976,9 @@ def print_info(tether, i=0):
     print("        {:.2f} s - {:.2f} s".format(start_stress_t, stop_stress_t))
     print("    datapoints: {}".format(stress.stop - stress.start))
     print("    z0: {:.2f} nm".format(
-        - np.median(tether.get_data('positionZ', stress)) * 1e9))
+        - np.median(tether.get_data(traces='positionZ', samples=stress)) * 1e9))
     print("    h0: {:.2f} nm".format(
-        - np.median(tether.get_data('positionZ', stress)) * 1e9
+        - np.median(tether.get_data(traces='positionZ', samples=stress)) * 1e9
                                     * tether.calibration.focalshift))
     print("  release")
     print("    t:  {:.3f} s".format(stop_release_t - start_release_t))
@@ -986,9 +986,9 @@ def print_info(tether, i=0):
                                                stop_release_t))
     print("    datapoints: {}".format(release.stop - release.start))
     print("    z0: {:.2f} nm".format(
-        - np.median(tether.get_data('positionZ', release)) * 1e9))
+        - np.median(tether.get_data(traces='positionZ', samples=release)) * 1e9))
     print("    h0: {:.2f} nm".format(
-        - np.median(tether.get_data('positionZ', release)) * 1e9
+        - np.median(tether.get_data(traces='positionZ', samples=release)) * 1e9
                                     * tether.calibration.focalshift))
 
 
