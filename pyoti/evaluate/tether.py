@@ -477,20 +477,26 @@ class Tether(Evaluator):
     def force_extension_pairs(self, i=None, axis=None, direction=None,
                               decimate=None, twoD=False, posmin=10e-9,
                               dXYZ_factors=None, fXYZ_factors=None,
-                              reduce_list=False, return_calibration=False,
-                              return_settings=False):
+                              return_dispXYZ=False, return_distXYZ=False,
+                              return_fXYZ=False, return_calibration=False,
+                              return_settings=False, reduce_list=False):
         return self.data_pairs(i=i, axis=axis, direction=direction,
                                decimate=decimate, fe_data=True, twoD=twoD,
                                posmin=posmin, dXYZ_factors=dXYZ_factors,
                                fXYZ_factors=fXYZ_factors,
-                               reduce_list=reduce_list,
+                               return_dispXYZ=return_dispXYZ,
+                               return_distXYZ=return_distXYZ,
+                               return_fXYZ=return_fXYZ,
                                return_calibration=return_calibration,
-                               return_settings=return_settings)
+                               return_settings=return_settings,
+                               reduce_list=reduce_list)
 
     def data_pairs(self, i=None, axis=None, direction=None, decimate=None,
                    fe_data=False, twoD=False, posmin=10e-9, dXYZ_factors=None,
-                   fXYZ_factors=None, reduce_list=False,
-                   return_calibration=False, return_settings=False):
+                   fXYZ_factors=None, return_dispXYZ=False,
+                   return_distXYZ=False, return_fXYZ=False,
+                   return_calibration=False, return_settings=False,
+                   reduce_list=False):
         """
         Return a dictionary of force extension values of stress release pairs.
 
@@ -544,14 +550,15 @@ class Tether(Evaluator):
         stop = pairs['release']['idx'][-1].stop
         samples = slice(start, stop)
         t = self.timevector[samples]
-        keys = ['psdXYZ', 'positionXYZ']
         if fe_data:
             _data = self.force_extension(samples=samples, twoD=twoD,
                                          posmin=posmin,
                                          dXYZ_factors=dXYZ_factors,
                                          fXYZ_factors=fXYZ_factors,
+                                         return_dispXYZ=return_dispXYZ,
+                                         return_distXYZ=return_distXYZ,
+                                         return_fXYZ=return_fXYZ,
                                          return_calibration=return_calibration)
-            keys = ['extension', 'force'] + keys
         else:
             _data = self.raw_data(samples=samples,
                                   return_calibration=return_calibration)
@@ -562,13 +569,13 @@ class Tether(Evaluator):
         for cycle in ['stress', 'release']:
             data[cycle] = {}
             data[cycle]['time'] = []
-            for key in keys:
+            for key in _data.keys():
                 data[cycle][key] = []
             idcs = pairs[cycle]['idx']
             for idx in idcs:
                 i = slice(idx.start - start, idx.stop - start, idx.step)
                 data[cycle]['time'].append(t[i])
-                for key in keys:
+                for key in _data.keys():
                     data[cycle][key].append(_data[key][i])
 
         # If only one pair, remove list and select only pair
@@ -815,7 +822,9 @@ class Tether(Evaluator):
     def force_extension(self, i=None, cycle=None, axis=None, direction=None,
                         samples=None, twoD=False, posmin=10e-9,
                         dXYZ_factors=None, fXYZ_factors=None,
-                        return_calibration=False, return_settings=False):
+                        return_dispXYZ=False, return_distXYZ=False,
+                        return_fXYZ=False, return_calibration=False,
+                        return_settings=False):
         """
         Extension (m, first column) of and force (N, second column) acting
         on the tethered molecule (2D numpy.ndarray).
@@ -832,11 +841,11 @@ class Tether(Evaluator):
             Smaller values could (depending on the number of datapoints)
             possibly lead to falsly detected excitation of the signal.
         """
-        data = self.raw_data(i=i, cycle=cycle, axis=axis,
+        _data = self.raw_data(i=i, cycle=cycle, axis=axis,
                              direction=direction, samples=samples,
                              return_calibration=return_calibration)
-        psdXYZ = data['psdXYZ']
-        positionXYZ = data['positionXYZ']
+        psdXYZ = _data['psdXYZ']
+        positionXYZ = _data['positionXYZ']
         positionXY = positionXYZ[:, 0:2]
         positionZ = positionXYZ[:, [2]]
         calibration = self.calibration
@@ -857,10 +866,17 @@ class Tether(Evaluator):
                         dXYZ_factors=dXYZ_factors, fXYZ_factors=fXYZ_factors)
         f = force(fXYZ, positionXY, posmin=posmin)
 
-        data.update({
+        data = {
             'extension': e,
-            'force': f
-        })
+            'force': f,
+        }
+        if return_dispXYZ:
+            data['displacementXYZ'] = dispXYZ
+        if return_distXYZ:
+            data['distanceXYZ'] = distXYZ
+        if return_fXYZ:
+            data['forceXYZ'] = fXYZ
+        data.update(**_data)
         if return_settings:
             data['settings'] = {
                 'i': i,
