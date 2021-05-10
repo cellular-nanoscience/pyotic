@@ -58,6 +58,12 @@ from scipy import sin
 from scipy import zeros
 from scipy import sqrt
 
+try:
+    from IPython import display
+    liveplot = True
+except:
+    liveplot = False
+
 import time
 
 import warnings
@@ -218,7 +224,7 @@ def _rel_drag_fit_fun(parameters,
 
     l = fs * (h - h0)
 
-    if method is 'viscosity':
+    if method == 'viscosity':
         rad = r
     else:
         rad = corr * r
@@ -1776,6 +1782,9 @@ class HeightCalibration(object):
                                                      title=ttl,
                                                      **plot_kws)
                 fig.canvas.draw()
+                if liveplot:
+                    display.display(fig)
+                    display.clear_output(wait=True)
                 time.sleep(plot_delay)
 
         # check if all psdfits were fitted
@@ -2851,7 +2860,7 @@ class HeightCalibration(object):
                 directory = self.directory
             except:
                 directory = './'
-        if basename is '':
+        if basename == '':
             try:
                 basename = self.basename
             except:
@@ -3183,10 +3192,15 @@ class HeightCalibration(object):
             else:
                 data = dissens
 
+            # Set label of y axis to include axis
+            unit_str = u2str(dissens_unit)
+            axis_str = 'z' if 'z' in name.lower() else 'xy'
+            ylabel = fr'$ \beta_\mathrm{{{axis_str}}} \; \mathrm{{({unit_str})}}$'
+
             if plot_ac_data:
-                label = r'$\beta_{{\mathrm{{{ax},\, ac}}}}$'.format(ax=name)
+                label = fr'$\beta_{{\mathrm{{{name},\, ac}}}}$'
             else:
-                label = r'$\beta_{{\mathrm{{{ax},\, pc}}}}$'.format(ax=name)
+                label = fr'$\beta_{{\mathrm{{{name},\, pc}}}}$'
 
             if plot_outliers:
                 label += ' outliers'
@@ -3215,8 +3229,7 @@ class HeightCalibration(object):
                                     alpha=0.7,
                                     xlabel=('Stage height ($\mathsf{{ {} }}$)'
                                             ''.format(u2str(height_unit))),
-                                    ylabel=(r'$ \beta \; \mathrm{{({})}}$'
-                                            ''.format(u2str(dissens_unit))),
+                                    ylabel=ylabel,
                                     **plot_kwargs)
         return ax.figure
 
@@ -3324,8 +3337,12 @@ class HeightCalibration(object):
                     conv = ureg('nm/mV').to(dissens_unit).magnitude
                     data *= conv
 
-                label = (r'$\beta_{{\mathrm{{{ax}, corrected}}}}$'
-                         ''.format(ax=name))
+                # Set label of y axis to include axis
+                unit_str = u2str(dissens_unit)
+                axis_str = 'z' if 'z' in name.lower() else 'xy'
+                ylabel = fr'$ \beta_\mathrm{{{axis_str}}} \; \mathrm{{({unit_str})}}$'
+
+                label = fr'$\beta_{{\mathrm{{{name}, corrected}}}}$'
 
                 ax = add_plot_to_figure(fig,
                                         heights,
@@ -3336,8 +3353,7 @@ class HeightCalibration(object):
                                         alpha=0.7,
                                         xlabel=('Stage height ({})'
                                                 ''.format(u2str(height_unit))),
-                                        ylabel=(r'$ \beta \; \mathrm{{({})}}$'
-                                                ''.format(u2str(dissens_unit))),
+                                        ylabel=ylabel,
                                         **plot_kwargs)
         return ax.figure
 
@@ -3432,6 +3448,11 @@ class HeightCalibration(object):
             else:
                 data = kappa
 
+            # Set label of y axis to include axis
+            unit_str = u2str(trap_stiffness_unit)
+            axis_str = 'z' if 'z' in name.lower() else 'xy'
+            ylabel = fr'$ \kappa_\mathrm{{{axis_str}}} \; \mathrm{{({unit_str})}}$'
+
             if plot_ac_data:
                 label = r'$\kappa_{{\mathrm{{{ax},\,ac}}}}$'.format(ax=name)
             else:
@@ -3464,8 +3485,7 @@ class HeightCalibration(object):
                                     alpha=0.7,
                                     xlabel=('Stage height ($\mathsf{{ {} }}$)'
                                             ''.format(u2str(height_unit))),
-                                    ylabel=(r'$ \kappa \; \mathrm{{({})}}$'
-                                            ''.format(u2str(trap_stiffness_unit))),
+                                    ylabel=ylabel,
                                     **plot_kwargs)
         return ax.figure
 
@@ -3573,8 +3593,12 @@ class HeightCalibration(object):
                     conv = ureg('pN/nm').to(trap_stiffness_unit).magnitude
                     data *= conv
 
-                label = (r'$\kappa_{{\mathrm{{{ax}, corrected}}}}$'
-                         ''.format(ax=name))
+                # Set label of y axis to include axis
+                unit_str = u2str(trap_stiffness_unit)
+                axis_str = 'z' if 'z' in name.lower() else 'xy'
+                ylabel = fr'$ \kappa_\mathrm{{{axis_str}}} \; \mathrm{{({unit_str})}}$'
+
+                label = fr'$\kappa_{{\mathrm{{{name}, corrected}}}}$'
 
                 add_plot_to_figure(fig,
                                    heights,
@@ -3585,8 +3609,7 @@ class HeightCalibration(object):
                                    alpha=0.7,
                                    xlabel=('Stage height ({})'
                                            ''.format(u2str(height_unit))),
-                                   ylabel=(r'$ \kappa \; \mathrm{{({})}}$'
-                                           ''.format(u2str(trap_stiffness_unit))),
+                                   ylabel=ylabel,
                                    **plot_kwargs)
         return ax.figure
 
@@ -3907,11 +3930,11 @@ class HeightCalibration(object):
         zplotted = False
 
         for idx, name in enumerate(names):
+            # Usually the axial values are far off from the lateral values so
+            # let's plot them on a separate axis (right y-axis)
             if name.find('z') < 0:
                 lor = '_l'
             else:
-                # usually the axial values are far off from the lateral values
-                # so let's plot them against the right y-axis
                 zplotted = True
                 lor = '_r'
 

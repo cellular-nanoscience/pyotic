@@ -175,7 +175,7 @@ def add_plot_to_figure(figure,
         else:
             ax.legend()
 
-    if ax.get_xscale() is not 'log' and ax.get_yscale() is not 'log':
+    if ax.get_xscale() != 'log' and ax.get_yscale() != 'log':
         ax.locator_params(nbins=nbins)
         ax.xaxis.get_major_formatter().set_powerlimits((-3, 3))
         ax.yaxis.get_major_formatter().set_powerlimits((-3, 3))

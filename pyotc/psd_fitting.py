@@ -1328,7 +1328,7 @@ class PSDFit(object):
         of the axis 'x'. Further, the suffixes '_min' and '_max' identify lower
         and upper boundaries for the fitting.
         """
-        if model.lower() is 'hydro':
+        if model.lower() == 'hydro':
             expset = self.psdm.exp_setting
             h_kw = {'radius': expset.get_radius(unit='m'),
                     'height': expset.get_height(unit='m'),
@@ -2002,7 +2002,7 @@ class PSDFit(object):
         # name of ac-excited PSD
         ex_axis = self.psdm.ex_axis
         # TODO axial ac-calibration
-        if self.psdm.psds[ex_axis].direction is 'axial':
+        if self.psdm.psds[ex_axis].direction == 'axial':
             warnings.warn('Axial excitation involves height dependent-changes '
                           'of the drag coefficient that are dependent on the '
                           'amplitude of excitation itself. These '
