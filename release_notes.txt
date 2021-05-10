@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.17.3
+ Improve plotting PyOTIC & add individual XYZ options to tether functions.
 ** Version 0.17.2
  Correct order of keys of tether.force_exension_pairs() return values to have backwards compatibility with other functions.
 ** Version 0.17.1
