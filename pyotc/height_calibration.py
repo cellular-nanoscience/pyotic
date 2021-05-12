@@ -2381,7 +2381,10 @@ class HeightCalibration(object):
         self.set_radius(float(d['specified_radius']), unit=d[co.radius_unit])
         self.set_radius_err(float(d['specified_radius_error']),
                             unit=d[co.radius_unit])
-        self.height_offset = float(d[co.height_offset])
+        try:
+            self.height_offset = float(d[co.height_offset])
+        except:
+            self.height_offset = 0.0
         self.set_wavelength(float(d[co.wl]), unit=d[co.wl_unit])
         self.focal_shift = float(d[co.fs])
         self.focal_shift_err = float(d[co.dfs])
