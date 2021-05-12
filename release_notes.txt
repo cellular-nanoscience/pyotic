@@ -1,4 +1,6 @@
 * Release notes
+** Version 0.17.4
+ Add workaround to load parameterfiles without "applied_height_offset" in method `load_parameter_file` in class `HeightCalibration`.
 ** Version 0.17.3
  Improve plotting PyOTIC & add individual XYZ options to tether functions.
 ** Version 0.17.2
